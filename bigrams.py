@@ -22,7 +22,8 @@ def extract_bigrams(txtfile, frqfile):
     bigrams = dict(sorted(((k,v) for k,v in bigrams.items()), key=lambda kv: -kv[1]))
     total = sum(bigrams.values())
     bigrams = dict((k,v/total) for k,v in bigrams.items())
-    bigrams = dict((k,v) for k,v in bigrams.items() if v > 1e-8)
+    cutoff = iter(bigrams.values()).__next__() * 1e-6
+    bigrams = dict((k,v) for k,v in bigrams.items() if v > cutoff)
 
     return bigrams
 
