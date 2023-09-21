@@ -1,5 +1,4 @@
 import cairo as cr
-import functools
 
 KERNEL_WIDTH = 11
 KERNEL = list(range(KERNEL_WIDTH))
@@ -100,6 +99,18 @@ def surface_sum(surface):
 
     return s
 
+def kern_pair(l, r):
+    l_blur = blur(l, KERNEL)
+    r_blur = blur(r, KERNEL)
+
+    for kern in range(0, -2 * BIAS - 1, -1):
+        o = overlap(l_blur, r_blur, kern)
+        s = surface_sum(o)
+        if s:
+            break
+
+    return kern
+
 def showcase(l, r, kern):
     height = l.get_height()
 
@@ -130,18 +141,11 @@ if __name__ == "__main__":
 
     assert len(text) == 2
 
-    l_orig = create_surface_for_text(text[0])
-    r_orig = create_surface_for_text(text[1])
+    l = create_surface_for_text(text[0])
+    r = create_surface_for_text(text[1])
 
-    l_blur = blur(l_orig, KERNEL)
-    r_blur = blur(r_orig, KERNEL)
+    kern = kern_pair(l, r)
 
-    for kern in range(0, -2 * BIAS - 1, -1):
-        o = overlap(l_blur, r_blur, kern)
-        s = surface_sum(o)
-        if s:
-            break
-
-    print(kern)
-    s = showcase(l_orig, r_orig, kern)
+    print(kern, text)
+    s = showcase(l, r, kern)
     s.write_to_png("kern.png")
