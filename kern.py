@@ -1,7 +1,7 @@
 import cairo as cr
 import functools
 
-KERNEL_WIDTH = 16
+KERNEL_WIDTH = 11
 KERNEL = list(range(KERNEL_WIDTH))
 KERNEL += list(KERNEL[-2::-1])
 BIAS = len(KERNEL) // 2
@@ -81,7 +81,7 @@ def overlap(l, r, kern=0):
     ctx.set_operator(cr.OPERATOR_SOURCE)
     ctx.paint()
 
-    ctx.set_source_surface(l, -l.get_width() + BIAS - kern, 0)
+    ctx.set_source_surface(l, -l.get_width() + 2 * BIAS - kern, 0)
     ctx.set_operator(cr.OPERATOR_IN)
     ctx.paint()
 
@@ -103,16 +103,16 @@ def surface_sum(surface):
 def showcase(l, r, kern):
     height = l.get_height()
 
-    ctx = create_surface_context(l.get_width() + r.get_width() - BIAS, height * 2 - BIAS)
+    ctx = create_surface_context(l.get_width() + r.get_width() - 2 * BIAS, height * 2 - BIAS)
 
     ctx.set_source_surface(l, 0, 0)
     ctx.paint()
-    ctx.set_source_surface(r, l.get_width() - BIAS, 0)
+    ctx.set_source_surface(r, l.get_width() - 2 * BIAS, 0)
     ctx.paint()
 
     ctx.set_source_surface(l, 0, height - BIAS)
     ctx.paint()
-    ctx.set_source_surface(r, l.get_width() - BIAS + kern, height - BIAS)
+    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern, height - BIAS)
     ctx.paint()
 
     return ctx.get_target()
