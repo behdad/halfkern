@@ -1,13 +1,16 @@
 import cairo as cr
 import cairoft
+import uharfbuzz as hb
 
-KERNEL_WIDTH = 11
+KERNEL_WIDTH = 9
 KERNEL = list(range(KERNEL_WIDTH))
 KERNEL += list(KERNEL[-2::-1])
 BIAS = len(KERNEL) // 2
 
 FONT_FACE = None
 FONT_SIZE = 64
+
+HB_FONT = None
 
 def blur(surface, kernel):
     s = sum(kernel)
@@ -132,6 +135,35 @@ def showcase(l, r, kern):
 
     return ctx.get_target()
 
+def create_hb_font(fontfile):
+    blob = hb.Blob.from_file_path(fontfile)
+    face = hb.Face(blob, 0)
+    font = hb.Font(face)
+    font.scale = (FONT_SIZE, FONT_SIZE)
+    return font
+
+def actual_kern(l, r):
+    buf = hb.Buffer()
+    buf.add_str(l)
+    buf.guess_segment_properties()
+    hb.shape(HB_FONT, buf)
+    l_advance = sum(g.x_advance for g in buf.glyph_positions)
+
+    buf = hb.Buffer()
+    buf.add_str(r)
+    buf.guess_segment_properties()
+    hb.shape(HB_FONT, buf)
+    r_advance = sum(g.x_advance for g in buf.glyph_positions)
+
+    buf = hb.Buffer()
+    buf.add_str(l)
+    buf.add_str(r)
+    buf.guess_segment_properties()
+    hb.shape(HB_FONT, buf)
+    combined_advance = sum(g.x_advance for g in buf.glyph_positions)
+
+    return combined_advance - (l_advance + r_advance)
+
 
 if __name__ == "__main__":
     import sys
@@ -139,6 +171,7 @@ if __name__ == "__main__":
     text = sys.argv[2]
 
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
+    HB_FONT = create_hb_font(font)
 
     if len(text) == 1:
         surface = create_surface_for_text(text)
@@ -152,7 +185,8 @@ if __name__ == "__main__":
     r = create_surface_for_text(text[1])
 
     kern = kern_pair(l, r)
+    font_kern = actual_kern(text[0], text[1])
 
-    print(kern, text)
+    print(kern, font_kern, text)
     s = showcase(l, r, kern)
     s.write_to_png("kern.png")

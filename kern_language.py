@@ -17,6 +17,7 @@ if __name__ == '__main__':
     lang = sys.argv[2]
 
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
+    kern.HB_FONT = kern.create_hb_font(font)
 
     import bz2
     txtfile = bz2.open(lang + ".txt.bz2")
@@ -35,7 +36,11 @@ if __name__ == '__main__':
             continue
 
         kern_value = kern.kern_pair(l, r, blurred=True)
-        if kern_value == 0:
+        font_kern = kern.actual_kern(bigram[0], bigram[1])
+        if kern_value == 0 and font_kern == 0:
             continue
 
-        print(bigram, kern_value)
+        if abs(kern_value - font_kern) <= 1:
+            continue
+
+        print(bigram, kern_value, font_kern)
