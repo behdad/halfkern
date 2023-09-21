@@ -99,12 +99,14 @@ def surface_sum(surface):
 
     return s
 
-def kern_pair(l, r):
-    l_blur = blur(l, KERNEL)
-    r_blur = blur(r, KERNEL)
+def kern_pair(l, r, blurred=False):
+
+    if not blurred:
+        l = blur(l, KERNEL)
+        r = blur(r, KERNEL)
 
     for kern in range(0, -2 * BIAS - 1, -1):
-        o = overlap(l_blur, r_blur, kern)
+        o = overlap(l, r, kern)
         s = surface_sum(o)
         if s:
             break
