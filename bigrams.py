@@ -6,7 +6,10 @@ def extract_bigrams(txtfile, frqfile):
     bigrams = defaultdict(int)
 
     for word,freq in zip(txtfile, frqfile):
-        word = word.strip().decode("utf-8")
+        try:
+            word = word.strip().decode("utf-8")
+        except UnicodeDecodeError:
+            continue
         freq = int(freq)
 
         if freq < MIN_FREQ:
