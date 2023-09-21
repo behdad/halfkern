@@ -3,6 +3,7 @@ import kern
 import cairoft
 import functools
 import unicodedata
+import itertools
 
 @functools.cache
 def create_blurred_surface_for_text(text):
@@ -27,9 +28,13 @@ if __name__ == '__main__':
     _, so = kern.kern_pair(l, l, 0, blurred=True)
     s = min(sl, sn, so)
 
-    import bz2
-    txtfile = bz2.open(lang + ".txt.bz2")
-    frqfile = bz2.open(lang + ".frq.bz2")
+    try:
+        txtfile = open(lang, 'rb')
+        frqfile = itertools.cycle([bigrams.MIN_FREQ])
+    except FileNotFoundError:
+        import bz2
+        txtfile = bz2.open(lang + ".txt.bz2")
+        frqfile = bz2.open(lang + ".frq.bz2")
 
     all_bigrams = bigrams.extract_bigrams(txtfile, frqfile)
     for bigram in all_bigrams:

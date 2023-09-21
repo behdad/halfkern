@@ -1,5 +1,6 @@
-
 from collections import defaultdict
+
+MIN_FREQ = 10
 
 def extract_bigrams(txtfile, frqfile):
     bigrams = defaultdict(int)
@@ -8,7 +9,7 @@ def extract_bigrams(txtfile, frqfile):
         word = word.strip().decode("utf-8")
         freq = int(freq)
 
-        if freq < 10:
+        if freq < MIN_FREQ:
             break
 
         for first,second in zip(word, word[1:]):
