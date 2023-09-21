@@ -1,10 +1,13 @@
 import cairo as cr
 import cairoft
 import uharfbuzz as hb
+import math
 
-KERNEL_WIDTH = 9
-KERNEL = list(range(KERNEL_WIDTH))
-KERNEL += list(KERNEL[-2::-1])
+def gaussian(x, a, b, c):
+    return a * math.exp(-(x - b)**2 / (2 * c**2))
+
+KERNEL_WIDTH = 13
+KERNEL = list(gaussian(x, 1, KERNEL_WIDTH // 2, KERNEL_WIDTH / 4) for x in range(KERNEL_WIDTH))
 BIAS = len(KERNEL) // 2
 
 FONT_FACE = None
@@ -113,10 +116,10 @@ def kern_pair(l, r, min_overlap, blurred=False):
     for kern in range(0, -2 * BIAS - 1, -1):
         o = overlap(l, r, kern)
         s = surface_sum(o)
-        if s > min_overlap:
+        if s >= min_overlap:
             break
 
-    return kern, s
+    return round(-((-kern) ** .5)), s
 
 def showcase(l, r, kern):
     height = l.get_height()
@@ -187,12 +190,12 @@ if __name__ == "__main__":
     kern, sn = kern_pair(l, l, 0)
     l = create_surface_for_text('o')
     kern, so = kern_pair(l, l, 0)
-    s = (sl + sn + so) / 3
+    s = min(sl, sn, so)
 
     l = create_surface_for_text(text[0])
     r = create_surface_for_text(text[1])
 
-    kern, s = kern_pair(l, r, 1000)
+    kern, s = kern_pair(l, r, s)
     font_kern = actual_kern(text[0], text[1])
 
     print(kern, font_kern, text)

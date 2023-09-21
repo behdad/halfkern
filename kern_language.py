@@ -25,7 +25,7 @@ if __name__ == '__main__':
     _, sn = kern.kern_pair(l, l, 0, blurred=True)
     l = create_blurred_surface_for_text('o')
     _, so = kern.kern_pair(l, l, 0, blurred=True)
-    s = (sl + sn + so) / 3
+    s = min(sl, sn, so)
 
     import bz2
     txtfile = bz2.open(lang + ".txt.bz2")
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         if kern_value == 0 and font_kern == 0:
             continue
 
-        if abs(kern_value - font_kern) <= 1:
+        if abs(kern_value - font_kern) <= 2:
             continue
 
         print(bigram, kern_value, font_kern)
