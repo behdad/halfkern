@@ -5,7 +5,7 @@ KERNEL = list(range(KERNEL_WIDTH))
 KERNEL += list(KERNEL[-2::-1])
 BIAS = len(KERNEL) // 2
 
-FONT_FAMILY = "Roboto Regular"
+FONT_FAMILY = "Roboto"
 FONT_SIZE = 64
 
 def blur(surface, kernel):
