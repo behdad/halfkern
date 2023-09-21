@@ -18,37 +18,40 @@ def blur(surface, kernel):
     height = surface.get_height()
     stride = surface.get_stride()
 
-    s1 = cr.ImageSurface.create_for_data(data, cr.FORMAT_A8, width, height, stride)
+    s1 = cr.ImageSurface(cr.FORMAT_A8, width, height)
     d1 = s1.get_data()
+    stride1 = s1.get_stride()
     for i in range(height):
         for j in range(width):
             p = 0
             for k,v in enumerate(kernel):
                 if j + k - BIAS >= 0 and j + k - BIAS < width:
                     p += data[i*stride + j + k - BIAS] * v
-            d1[i*stride + j] = int(p)
+            d1[i*stride1 + j] = int(p)
 
-    s2 = cr.ImageSurface.create_for_data(data, cr.FORMAT_A8, width, height, stride)
+    s2 = cr.ImageSurface(cr.FORMAT_A8, width, height)
     d2 = s2.get_data()
+    stride2 = s2.get_stride()
     for j in range(width):
         for i in range(height):
             p = 0
             for k,v in enumerate(kernel):
                 if i + k - BIAS >= 0 and i + k - BIAS < height:
-                    p += d1[(i + k - BIAS) * stride + j] * v
-            d2[i*stride + j] = int(p)
+                    p += d1[(i + k - BIAS) * stride1 + j] * v
+            d2[i*stride2 + j] = int(p)
+
+    s2.mark_dirty()
 
     return s2
 
 def create_surface_context(width, height):
     surface = cr.ImageSurface(cr.FORMAT_A8, width, height)
     ctx = cr.Context(surface)
-    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_source_rgb(1, 1, 1)
     ctx.select_font_face(FONT_FAMILY, cr.FONT_SLANT_NORMAL, cr.FONT_WEIGHT_NORMAL)
     ctx.set_font_size(FONT_SIZE)
     return ctx
 
-@functools.cache
 def create_surface_for_text(text):
     measurement_ctx = create_surface_context(1, 1)
     font_extents = measurement_ctx.font_extents()
@@ -78,7 +81,7 @@ def overlap(l, r, kern=0):
     ctx.set_operator(cr.OPERATOR_SOURCE)
     ctx.paint()
 
-    ctx.set_source_surface(l, -l.get_width() + BIAS + kern, 0)
+    ctx.set_source_surface(l, -l.get_width() + BIAS - kern, 0)
     ctx.set_operator(cr.OPERATOR_IN)
     ctx.paint()
 
@@ -97,6 +100,23 @@ def surface_sum(surface):
 
     return s
 
+def showcase(l, r, kern):
+    height = l.get_height()
+
+    ctx = create_surface_context(l.get_width() + r.get_width() - BIAS, height * 2 - BIAS)
+
+    ctx.set_source_surface(l, 0, 0)
+    ctx.paint()
+    ctx.set_source_surface(r, l.get_width() - BIAS, 0)
+    ctx.paint()
+
+    ctx.set_source_surface(l, 0, height - BIAS)
+    ctx.paint()
+    ctx.set_source_surface(r, l.get_width() - BIAS + kern, height - BIAS)
+    ctx.paint()
+
+    return ctx.get_target()
+
 
 if __name__ == "__main__":
     import sys
@@ -110,12 +130,18 @@ if __name__ == "__main__":
 
     assert len(text) == 2
 
-    l = blur(create_surface_for_text(text[0]), KERNEL)
-    r = blur(create_surface_for_text(text[1]), KERNEL)
+    l_orig = create_surface_for_text(text[0])
+    r_orig = create_surface_for_text(text[1])
 
-    for kern in range(0, 2 * BIAS + 1):
-        o = overlap(l, r, kern)
+    l_blur = blur(l_orig, KERNEL)
+    r_blur = blur(r_orig, KERNEL)
+
+    for kern in range(0, -2 * BIAS - 1, -1):
+        o = overlap(l_blur, r_blur, kern)
         s = surface_sum(o)
         if s:
-            print(kern)
             break
+
+    print(kern)
+    s = showcase(l_orig, r_orig, kern)
+    s.write_to_png("kern.png")
