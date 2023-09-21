@@ -9,7 +9,7 @@ def extract_bigrams(txtfile, frqfile):
         try:
             word = word.strip().decode("utf-8")
         except UnicodeDecodeError:
-            continue
+            word = word.strip().decode("latin1")
         freq = int(freq)
 
         if freq < MIN_FREQ:
