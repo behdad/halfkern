@@ -6,8 +6,11 @@ import math
 def gaussian(x, a, b, c):
     return a * math.exp(-(x - b)**2 / (2 * c**2))
 
-KERNEL_WIDTH = 13
-KERNEL = list(gaussian(x, 1, KERNEL_WIDTH // 2, KERNEL_WIDTH / 4) for x in range(KERNEL_WIDTH))
+def kernel(width):
+    return list(gaussian(x, 1, KERNEL_WIDTH // 2, KERNEL_WIDTH / 4) for x in range(KERNEL_WIDTH))
+
+KERNEL_WIDTH = 11
+KERNEL = kernel(KERNEL_WIDTH)
 BIAS = len(KERNEL) // 2
 
 FONT_FACE = None
@@ -173,6 +176,24 @@ def actual_kern(l, r):
     return combined_advance - (l_advance + r_advance)
 
 
+def find_s():
+    global KERNEL_WIDTH, KERNEL, BIAS
+    while True:
+        l = create_surface_for_text('l')
+        kern, sl = kern_pair(l, l, 0)
+        l = create_surface_for_text('n')
+        kern, sn = kern_pair(l, l, 0)
+        l = create_surface_for_text('o')
+        kern, so = kern_pair(l, l, 0)
+        s = min(sl, sn, so)
+        if s > 0:
+            return s
+
+        KERNEL_WIDTH += 2
+        KERNEL = kernel(KERNEL_WIDTH)
+        BIAS = len(KERNEL) // 2
+
+
 if __name__ == "__main__":
     import sys
     font = sys.argv[1]
@@ -189,13 +210,7 @@ if __name__ == "__main__":
 
     assert len(text) == 2
 
-    l = create_surface_for_text('l')
-    kern, sl = kern_pair(l, l, 0)
-    l = create_surface_for_text('n')
-    kern, sn = kern_pair(l, l, 0)
-    l = create_surface_for_text('o')
-    kern, so = kern_pair(l, l, 0)
-    s = min(sl, sn, so)
+    s = find_s()
 
     l = create_surface_for_text(text[0])
     r = create_surface_for_text(text[1])

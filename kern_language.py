@@ -20,13 +20,7 @@ if __name__ == '__main__':
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     kern.HB_FONT = kern.create_hb_font(font)
 
-    l = create_blurred_surface_for_text('l')
-    _, sl = kern.kern_pair(l, l, 0, blurred=True)
-    l = create_blurred_surface_for_text('n')
-    _, sn = kern.kern_pair(l, l, 0, blurred=True)
-    l = create_blurred_surface_for_text('o')
-    _, so = kern.kern_pair(l, l, 0, blurred=True)
-    s = min(sl, sn, so)
+    s = kern.find_s()
 
     try:
         txtfile = open(lang, 'rb')
