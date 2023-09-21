@@ -121,10 +121,10 @@ def kern_pair(l, r, min_overlap, blurred=False):
 
     return round(-((-kern) ** .5)), s
 
-def showcase(l, r, kern):
+def showcase(l, r, kern1, kern2):
     height = l.get_height()
 
-    ctx = create_surface_context(l.get_width() + r.get_width() - 2 * BIAS, height * 2 - BIAS)
+    ctx = create_surface_context(l.get_width() + r.get_width() - 2 * BIAS, height * 3 - 2 * BIAS)
 
     ctx.set_source_surface(l, 0, 0)
     ctx.paint()
@@ -133,7 +133,12 @@ def showcase(l, r, kern):
 
     ctx.set_source_surface(l, 0, height - BIAS)
     ctx.paint()
-    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern, height - BIAS)
+    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern1, height - BIAS)
+    ctx.paint()
+
+    ctx.set_source_surface(l, 0, 2 * height - 2 * BIAS)
+    ctx.paint()
+    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern2, 2 * height - 2 * BIAS)
     ctx.paint()
 
     return ctx.get_target()
@@ -199,5 +204,5 @@ if __name__ == "__main__":
     font_kern = actual_kern(text[0], text[1])
 
     print(kern, font_kern, text)
-    s = showcase(l, r, kern)
+    s = showcase(l, r, kern, font_kern)
     s.write_to_png("kern.png")
