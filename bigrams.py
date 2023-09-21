@@ -8,7 +8,7 @@ def extract_bigrams(txtfile, frqfile):
 		word = word.strip().decode("utf-8")
 		freq = int(freq)
 
-		if freq < 1000:
+		if freq < 100:
 			break
 
 		for first,second in zip(word, word[1:]):
@@ -18,7 +18,7 @@ def extract_bigrams(txtfile, frqfile):
 	bigrams = dict(sorted(((k,v) for k,v in bigrams.items()), key=lambda kv: -kv[1]))
 	total = sum(bigrams.values())
 	bigrams = dict((k,v/total) for k,v in bigrams.items())
-	bigrams = dict((k,v) for k,v in bigrams.items() if v > 1e-4)
+	bigrams = dict((k,v) for k,v in bigrams.items() if v > 1e-6)
 
 	return bigrams
 
