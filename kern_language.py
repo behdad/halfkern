@@ -38,4 +38,4 @@ if __name__ == '__main__':
         if kern_value == 0:
             continue
 
-        print(kern_value, bigram)
+        print(bigram, kern_value)
