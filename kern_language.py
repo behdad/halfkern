@@ -19,6 +19,14 @@ if __name__ == '__main__':
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     kern.HB_FONT = kern.create_hb_font(font)
 
+    l = create_blurred_surface_for_text('l')
+    _, sl = kern.kern_pair(l, l, 0, blurred=True)
+    l = create_blurred_surface_for_text('n')
+    _, sn = kern.kern_pair(l, l, 0, blurred=True)
+    l = create_blurred_surface_for_text('o')
+    _, so = kern.kern_pair(l, l, 0, blurred=True)
+    s = (sl + sn + so) / 3
+
     import bz2
     txtfile = bz2.open(lang + ".txt.bz2")
     frqfile = bz2.open(lang + ".frq.bz2")
@@ -35,7 +43,7 @@ if __name__ == '__main__':
         if l is None or r is None:
             continue
 
-        kern_value = kern.kern_pair(l, r, blurred=True)
+        kern_value, _ = kern.kern_pair(l, r, s, blurred=True)
         font_kern = kern.actual_kern(bigram[0], bigram[1])
         if kern_value == 0 and font_kern == 0:
             continue

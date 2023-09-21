@@ -104,7 +104,7 @@ def surface_sum(surface):
 
     return s
 
-def kern_pair(l, r, blurred=False):
+def kern_pair(l, r, min_overlap, blurred=False):
 
     if not blurred:
         l = blur(l, KERNEL)
@@ -113,10 +113,10 @@ def kern_pair(l, r, blurred=False):
     for kern in range(0, -2 * BIAS - 1, -1):
         o = overlap(l, r, kern)
         s = surface_sum(o)
-        if s:
+        if s > min_overlap:
             break
 
-    return kern
+    return kern, s
 
 def showcase(l, r, kern):
     height = l.get_height()
@@ -181,10 +181,18 @@ if __name__ == "__main__":
 
     assert len(text) == 2
 
+    l = create_surface_for_text('l')
+    kern, sl = kern_pair(l, l, 0)
+    l = create_surface_for_text('n')
+    kern, sn = kern_pair(l, l, 0)
+    l = create_surface_for_text('o')
+    kern, so = kern_pair(l, l, 0)
+    s = (sl + sn + so) / 3
+
     l = create_surface_for_text(text[0])
     r = create_surface_for_text(text[1])
 
-    kern = kern_pair(l, r)
+    kern, s = kern_pair(l, r, 1000)
     font_kern = actual_kern(text[0], text[1])
 
     print(kern, font_kern, text)
