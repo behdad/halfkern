@@ -1,5 +1,6 @@
 import bigrams
 import kern
+import cairoft
 import functools
 
 @functools.cache
@@ -8,8 +9,12 @@ def create_blurred_surface_for_text(text):
 
 if __name__ == '__main__':
     import sys
+    font = sys.argv[1]
+    lang = sys.argv[2]
+
+    kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
+
     import bz2
-    lang = sys.argv[1]
     txtfile = bz2.open(lang + ".txt.bz2")
     frqfile = bz2.open(lang + ".frq.bz2")
 

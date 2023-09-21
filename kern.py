@@ -1,11 +1,12 @@
 import cairo as cr
+import cairoft
 
 KERNEL_WIDTH = 11
 KERNEL = list(range(KERNEL_WIDTH))
 KERNEL += list(KERNEL[-2::-1])
 BIAS = len(KERNEL) // 2
 
-FONT_FAMILY = "Roboto"
+FONT_FACE = None
 FONT_SIZE = 64
 
 def blur(surface, kernel):
@@ -47,7 +48,8 @@ def create_surface_context(width, height):
     surface = cr.ImageSurface(cr.FORMAT_A8, width, height)
     ctx = cr.Context(surface)
     ctx.set_source_rgb(1, 1, 1)
-    ctx.select_font_face(FONT_FAMILY, cr.FONT_SLANT_NORMAL, cr.FONT_WEIGHT_NORMAL)
+    if FONT_FACE is not None:
+        ctx.set_font_face(FONT_FACE)
     ctx.set_font_size(FONT_SIZE)
     return ctx
 
@@ -133,7 +135,10 @@ def showcase(l, r, kern):
 
 if __name__ == "__main__":
     import sys
-    text = sys.argv[1]
+    font = sys.argv[1]
+    text = sys.argv[2]
+
+    FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
 
     if len(text) == 1:
         surface = create_surface_for_text(text)
