@@ -270,8 +270,19 @@ def find_s():
 if __name__ == "__main__":
     import sys
 
-    font = sys.argv[1]
-    text = sys.argv[2]
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        "python3 kern.py",
+        description="Autokern a pair of characters.",
+    )
+    parser.add_argument("font", metavar="font.ttf", help="Font file.")
+    parser.add_argument("text", metavar="text", help="Pair to kern.")
+
+    options = parser.parse_args(sys.argv[1:])
+
+    font = options.font
+    text = options.text
 
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     HB_FONT = create_hb_font(font)
@@ -301,6 +312,7 @@ if __name__ == "__main__":
         "existing kern:",
         font_kern,
     )
+    print("Saving kern.png and kerned.png")
     s = showcase(l, r, kern, font_kern)
     s.write_to_png("kern.png")
     s = showcase_in_context(text[0], text[1], kern, font_kern)
