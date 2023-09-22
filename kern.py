@@ -218,6 +218,6 @@ if __name__ == "__main__":
     kern, s = kern_pair(l, r, s)
     font_kern = actual_kern(text[0], text[1])
 
-    print(kern, font_kern, text)
+    print(text, kern, font_kern)
     s = showcase(l, r, kern, font_kern)
     s.write_to_png("kern.png")
