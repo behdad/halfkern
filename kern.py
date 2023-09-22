@@ -35,7 +35,6 @@ BIAS = len(KERNEL) // 2
 
 
 def blur(surface, kernel=None):
-
     if kernel is None:
         kernel = KERNEL
 
@@ -116,6 +115,11 @@ def overlap(l, r, kern=0):
 
 def surface_sum(surface):
     data = surface.get_data()
+
+    return max(np.array(data, dtype="uint8"))
+
+    # Slower but takes stride into account
+
     width = surface.get_width()
     height = surface.get_height()
     stride = surface.get_stride()
