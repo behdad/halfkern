@@ -15,7 +15,7 @@ def kernel(width):
         gaussian(x, 1, KERNEL_WIDTH // 2, KERNEL_WIDTH / 4) for x in range(KERNEL_WIDTH)
     )
     s = sum(kernel)
-    kernel = np.matrix([x / s for x in kernel])
+    kernel = np.matrix([x / s for x in kernel], dtype="float32")
     kernel = kernel.transpose() * kernel
     return kernel
 
