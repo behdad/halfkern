@@ -28,7 +28,9 @@ KERNEL = kernel(KERNEL_WIDTH)
 BIAS = len(KERNEL) // 2
 
 
-def blur(surface, kernel):
+def blur(surface, kernel=None):
+    if kernel is None:
+        kernel = KERNEL
     s = sum(kernel)
     kernel = [x / s for x in kernel]
 
@@ -258,12 +260,12 @@ def actual_kern(l, r, scaled=True):
 def find_s():
     global KERNEL_WIDTH, KERNEL, BIAS
     while True:
-        l = create_surface_for_text("l")
-        kern, sl = kern_pair(l, l, 0)
-        l = create_surface_for_text("n")
-        kern, sn = kern_pair(l, l, 0)
-        l = create_surface_for_text("o")
-        kern, so = kern_pair(l, l, 0)
+        l = blur(create_surface_for_text("l"))
+        kern, sl = kern_pair(l, l, 0, blurred=True)
+        l = blur(create_surface_for_text("n"))
+        kern, sn = kern_pair(l, l, 0, blurred=True)
+        l = blur(create_surface_for_text("o"))
+        kern, so = kern_pair(l, l, 0, blurred=True)
         s = min(sl, sn, so)
         if s > max(sl, sn, so) / 2:
             return s
