@@ -2,7 +2,6 @@ from collections import defaultdict
 
 MIN_FREQ = 10
 ENCODING = "utf-8"
-#ENCODING = "iso8859-2"
 
 
 def extract_bigrams(txtfile, frqfile):

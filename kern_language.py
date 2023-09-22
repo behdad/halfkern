@@ -17,9 +17,28 @@ def create_blurred_surface_for_text(text):
 if __name__ == "__main__":
     import sys
 
-    font = sys.argv[1]
-    lang = sys.argv[2]
+    import argparse
 
+    parser = argparse.ArgumentParser(
+        "kern_language.py",
+        description="Find missing kerning pairs for a font & language pair.",
+    )
+    parser.add_argument("font", metavar="font.ttf", help="Font file.")
+    parser.add_argument("dict", metavar="dict", help="Dictionary file.")
+    parser.add_argument(
+        "-e",
+        "--encoding",
+        type=str,
+        help="Text encoding. Default: utf-8",
+    )
+
+    options = parser.parse_args(sys.argv[1:])
+
+    font = options.font
+    lang = options.dict
+    encoding = options.encoding or "utf-8"
+
+    bigrams.ENCODING = encoding
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     kern.HB_FONT = kern.create_hb_font(font)
 
