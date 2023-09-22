@@ -122,7 +122,7 @@ def surface_sum(surface):
     s = 0
     for i in range(height):
         for j in range(width):
-            s += data[i * stride + j]
+            s = max(s, data[i * stride + j])
 
     return s
 
