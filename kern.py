@@ -141,6 +141,8 @@ def showcase(l, r, kern1, kern2):
     ctx = create_surface_context(
         l.get_width() + r.get_width() - 2 * BIAS, height * 3 - 2 * BIAS
     )
+    ctx.paint()
+    ctx.set_operator(cr.OPERATOR_DEST_OUT)
 
     ctx.set_source_surface(l, 0, 0)
     ctx.paint()
