@@ -292,7 +292,15 @@ if __name__ == "__main__":
     kern, s = kern_pair(l, r, s)
     font_kern = actual_kern(text[0], text[1])
 
-    print(text, kern, font_kern)
+    upem = HB_FONT.face.upem
+    print(
+        text,
+        "autokern:",
+        kern,
+        "(%u units)" % round(kern / FONT_SIZE * upem),
+        "existing kern:",
+        font_kern,
+    )
     s = showcase(l, r, kern, font_kern)
     s.write_to_png("kern.png")
     s = showcase_in_context(text[0], text[1], kern, font_kern)
