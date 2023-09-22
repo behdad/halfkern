@@ -144,16 +144,17 @@ def kern_pair(l, r, min_overlap, max_overlap, blurred=False):
             s = surface_sum(o)
             if s >= min_overlap:
                 break
+        else:
+            return None, 0
     elif s > max_overlap:
         for kern in range(+1, +2 * BIAS + 1, +1):
             o = overlap(l, r, kern)
             s = surface_sum(o)
             if s <= max_overlap:
                 break
+        else:
+            return None, 0
 
-    if s == 0:
-        # No overlap
-        return None, 0
 
     # Return just half the kern
     return kern // 2, s
