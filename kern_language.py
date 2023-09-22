@@ -57,7 +57,7 @@ if __name__ == "__main__":
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
     kern.HB_FONT = kern.create_hb_font(fontfile)
 
-    s = kern.find_s()
+    min_s, max_s = kern.find_s()
 
     all_bigrams = bigrams.extract_bigrams_from_file(dictfile)
     for bigram in all_bigrams:
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         if l is None or r is None:
             continue
 
-        kern_value, _ = kern.kern_pair(l, r, s, blurred=True)
+        kern_value, _ = kern.kern_pair(l, r, min_s, max_s, blurred=True)
         if kern_value is None:
             continue
         font_kern = kern.actual_kern(bigram[0], bigram[1])

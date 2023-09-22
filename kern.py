@@ -130,16 +130,26 @@ def surface_sum(surface):
     return s
 
 
-def kern_pair(l, r, min_overlap, blurred=False):
+def kern_pair(l, r, min_overlap, max_overlap, blurred=False):
     if not blurred:
         l = blur(l)
         r = blur(r)
 
-    for kern in range(0, -2 * BIAS - 1, -1):
-        o = overlap(l, r, kern)
-        s = surface_sum(o)
-        if s >= min_overlap:
-            break
+    kern = 0
+    s = surface_sum(overlap(l, r, kern))
+
+    if s < min_overlap:
+        for kern in range(-1, -2 * BIAS - 1, -1):
+            o = overlap(l, r, kern)
+            s = surface_sum(o)
+            if s >= min_overlap:
+                break
+    elif s > max_overlap:
+        for kern in range(+1, +2 * BIAS + 1, +1):
+            o = overlap(l, r, kern)
+            s = surface_sum(o)
+            if s <= max_overlap:
+                break
 
     if s == 0:
         # No overlap
@@ -268,13 +278,13 @@ def find_s():
         ss = []
         for c in TUNING_CHARS:
             surface = blur(create_surface_for_text(c))
-            kern, s = kern_pair(surface, surface, 0, blurred=True)
+            kern, s = kern_pair(surface, surface, 0, 1e10, blurred=True)
             ss.append(s)
 
         min_s = min(ss)
         max_s = max(ss)
         if min_s > max_s / 2:
-            return min_s
+            return min_s, max_s
 
         KERNEL_WIDTH += 2
         KERNEL = kernel(KERNEL_WIDTH)
@@ -318,12 +328,12 @@ if __name__ == "__main__":
 
     assert len(text) == 2
 
-    s = find_s()
+    min_s, max_s = find_s()
 
     l = create_surface_for_text(text[0])
     r = create_surface_for_text(text[1])
 
-    kern, s = kern_pair(l, r, s)
+    kern, s = kern_pair(l, r, min_s, max_s)
     if kern is None:
         print("Couldn't autokern")
         kern = 0
