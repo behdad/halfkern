@@ -3,7 +3,6 @@ import kern
 import cairoft
 import functools
 import unicodedata
-import itertools
 
 
 @functools.cache
@@ -20,7 +19,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        "kern_language.py",
+        "python3 kern_language.py",
         description="Find missing kerning pairs for a font & language pair.",
     )
     parser.add_argument("font", metavar="font.ttf", help="Font file.")
@@ -34,26 +33,17 @@ if __name__ == "__main__":
 
     options = parser.parse_args(sys.argv[1:])
 
-    font = options.font
-    lang = options.dict
+    fontfile = options.font
+    dictfile = options.dict
     encoding = options.encoding or "utf-8"
 
     bigrams.ENCODING = encoding
-    kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
-    kern.HB_FONT = kern.create_hb_font(font)
+    kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
+    kern.HB_FONT = kern.create_hb_font(fontfile)
 
     s = kern.find_s()
 
-    try:
-        txtfile = (s if s.find(b'/') == -1 else s[:s.find(b'/')] for s in open(lang, "rb"))
-        frqfile = itertools.cycle([bigrams.MIN_FREQ])
-    except FileNotFoundError:
-        import bz2
-
-        txtfile = bz2.open(lang + ".txt.bz2")
-        frqfile = bz2.open(lang + ".frq.bz2")
-
-    all_bigrams = bigrams.extract_bigrams(txtfile, frqfile)
+    all_bigrams = bigrams.extract_bigrams_from_file(dictfile)
     for bigram in all_bigrams:
         if (
             unicodedata.category(bigram[0]) == "Mn"
