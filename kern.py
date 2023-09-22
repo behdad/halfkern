@@ -118,7 +118,7 @@ def surface_sum(surface):
     s = 0
     for i in range(height):
         for j in range(width):
-            s += data[i * stride + j] ** 4
+            s += data[i * stride + j]
 
     return s
 
@@ -206,7 +206,7 @@ def find_s():
         l = create_surface_for_text("o")
         kern, so = kern_pair(l, l, 0)
         s = min(sl, sn, so)
-        if s > 0:
+        if s > max(sl, sn, so) / 2:
             return s
 
         KERNEL_WIDTH += 2
