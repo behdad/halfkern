@@ -96,7 +96,7 @@ def overlap(l, r, kern=0):
     height = l.get_height()
     assert height == r.get_height()
 
-    width = r.get_width() + kern
+    width = 2 * BIAS - kern
 
     ctx = create_surface_context(width, height)
 
