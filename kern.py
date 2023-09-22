@@ -156,14 +156,18 @@ def showcase(l, r, kern1, kern2):
     ctx.set_source_surface(r, l.get_width() - 2 * BIAS, 0)
     ctx.paint()
 
-    ctx.set_source_surface(l, 0, height - BIAS)
+    ctx.translate(0, height - BIAS)
+
+    ctx.set_source_surface(l, 0, 0)
     ctx.paint()
-    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern1, height - BIAS)
+    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern1, 0)
     ctx.paint()
 
-    ctx.set_source_surface(l, 0, 2 * height - 2 * BIAS)
+    ctx.translate(0, height - BIAS)
+
+    ctx.set_source_surface(l, 0, 0)
     ctx.paint()
-    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern2, 2 * height - 2 * BIAS)
+    ctx.set_source_surface(r, l.get_width() - 2 * BIAS + kern2, 0)
     ctx.paint()
 
     return ctx.get_target()
