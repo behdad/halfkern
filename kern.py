@@ -11,9 +11,13 @@ def gaussian(x, a, b, c):
 
 
 def kernel(width):
-    return list(
+    kernel = list(
         gaussian(x, 1, KERNEL_WIDTH // 2, KERNEL_WIDTH / 4) for x in range(KERNEL_WIDTH)
     )
+    s = sum(kernel)
+    kernel = np.matrix([x / s for x in kernel])
+    kernel = kernel.transpose() * kernel
+    return kernel
 
 
 FONT_FACE = None
@@ -34,9 +38,6 @@ def blur(surface, kernel=None):
 
     if kernel is None:
         kernel = KERNEL
-    s = sum(kernel)
-    kernel = np.matrix([x / s for x in kernel])
-    kernel = kernel.transpose() * kernel
 
     width = surface.get_width()
     height = surface.get_height()
