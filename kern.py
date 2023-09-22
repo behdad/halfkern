@@ -52,7 +52,7 @@ def blur(surface, kernel=None):
 
     image = np.matrix(image, dtype="uint8")
     stride = (width + 3) & ~3
-    padding = [0] * (stride - width)
+    padding = b'\0' * (stride - width)
     data = bytearray()
     for i in range(height):
         data.extend(image[i].tobytes())
