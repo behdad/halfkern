@@ -132,7 +132,8 @@ def kern_pair(l, r, min_overlap, blurred=False):
         if s >= min_overlap:
             break
 
-    return round(-((-kern) ** 0.5)), s
+    # Return just half the kern
+    return kern // 2, s
 
 
 def showcase(l, r, kern1, kern2):
