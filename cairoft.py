@@ -20,8 +20,13 @@ def create_cairo_font_face_for_file(filename, faceindex=0, loadoptions=0):
 
     if not _initialized:
         # find shared objects
-        _freetype_so = ct.CDLL("libfreetype.so.6")
-        _cairo_so = ct.CDLL("libcairo.so.2")
+        import platform
+        if platform.system() == "Darwin":
+            _freetype_so = ct.CDLL("libfreetype.dylib")
+            _cairo_so = ct.CDLL("libcairo.dylib")
+        else:
+            _freetype_so = ct.CDLL("libfreetype.so.6")
+            _cairo_so = ct.CDLL("libcairo.so.2")
         _cairo_so.cairo_ft_font_face_create_for_ft_face.restype = ct.c_void_p
         _cairo_so.cairo_ft_font_face_create_for_ft_face.argtypes = [
             ct.c_void_p,
