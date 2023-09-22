@@ -134,8 +134,8 @@ def surface_sum(surface):
 
 def kern_pair(l, r, min_overlap, blurred=False):
     if not blurred:
-        l = blur(l, KERNEL)
-        r = blur(r, KERNEL)
+        l = blur(l)
+        r = blur(r)
 
     for kern in range(0, -2 * BIAS - 1, -1):
         o = overlap(l, r, kern)
