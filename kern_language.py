@@ -36,12 +36,21 @@ if __name__ == "__main__":
         action="store_true",
         help="Only list bigrams of letters. Default: False",
     )
+    parser.add_argument(
+        "-t",
+        "--tolerance",
+        type=float,
+        help="Tolerance for kerning value. Default: 0.033.",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
     fontfile = options.font
     dictfile = options.dict
     encoding = options.encoding or "utf-8"
+    tolerance = options.tolerance or 0.033
+    if tolerance >= 1:
+        tolerance = tolerance / kern.FONT_SIZE
 
     bigrams.ENCODING = encoding
     bigrams.LETTERS_ONLY = options.letters_only
@@ -71,7 +80,7 @@ if __name__ == "__main__":
         if kern_value == 0 and font_kern == 0:
             continue
 
-        if abs(kern_value - font_kern) <= kern.FONT_SIZE / 32:
+        if abs(kern_value - font_kern) <= kern.FONT_SIZE * tolerance:
             continue
 
         # if kern_value * 2 <= font_kern <= kern_value:
