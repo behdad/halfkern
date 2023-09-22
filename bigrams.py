@@ -32,20 +32,22 @@ def extract_bigrams(txtfile, frqfile):
 
     return bigrams
 
-def extract_bigrams_from_file(filename):
 
+def extract_bigrams_from_file(filename):
     try:
         txtfile = open(filename, "rb")
         # Assume hunspell dictionary format; drop everything after "/"
-        txtfile = (s if s.find(b'/') == -1 else s[:s.find(b'/')] for s in txtfile)
+        txtfile = (s if s.find(b"/") == -1 else s[: s.find(b"/")] for s in txtfile)
         frqfile = itertools.cycle([MIN_FREQ])
     except FileNotFoundError:
         import bz2
+
         # Assume harfbuzz-testing-wikipedia format
         txtfile = bz2.open(filename + ".txt.bz2")
         frqfile = bz2.open(filename + ".frq.bz2")
 
     return extract_bigrams(txtfile, frqfile)
+
 
 if __name__ == "__main__":
     import sys

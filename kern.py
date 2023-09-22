@@ -173,6 +173,51 @@ def showcase(l, r, kern1, kern2):
     return ctx.get_target()
 
 
+def showcase_in_context(l, r, kern1, kern2):
+    measurement_ctx = create_surface_context(1, 1)
+    font_extents = measurement_ctx.font_extents()
+    ascent = round(font_extents[0])
+    descent = round(font_extents[1])
+    height = ascent + descent
+
+    context_strs = ("non", "HOH")
+
+    for op in ("MEASURE", "CUT"):
+        width = 0
+        lines = 0
+        for context in context_strs:
+            textl = context + l
+            textr = r + context
+            for kern in (0, kern1, kern2):
+                if op == "MEASURE":
+                    # Measure
+                    lines += 1
+                    this_width = 0
+                    box = measurement_ctx.text_extents(textl)
+                    this_width += box.x_advance
+                    this_width += kern
+                    box = measurement_ctx.text_extents(textr)
+                    this_width += box.x_advance
+                    width = max(width, this_width)
+                else:
+                    # Render
+                    ctx.move_to(BIAS, BIAS + ascent)
+                    ctx.show_text(textl)
+                    x, y = ctx.get_current_point()
+                    ctx.move_to(x + kern, y)
+                    ctx.show_text(textr)
+                    ctx.translate(0, height + BIAS)
+
+        if op == "MEASURE":
+            ctx = create_surface_context(
+                round(width) + 2 * BIAS, (height + BIAS) * lines + BIAS
+            )
+            ctx.paint()
+            ctx.set_operator(cr.OPERATOR_DEST_OUT)
+
+    return ctx.get_target()
+
+
 def create_hb_font(fontfile):
     blob = hb.Blob.from_file_path(fontfile)
     face = hb.Face(blob, 0)
@@ -250,3 +295,5 @@ if __name__ == "__main__":
     print(text, kern, font_kern)
     s = showcase(l, r, kern, font_kern)
     s.write_to_png("kern.png")
+    s = showcase_in_context(text[0], text[1], kern, font_kern)
+    s.write_to_png("kerned.png")

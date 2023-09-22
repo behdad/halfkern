@@ -21,6 +21,7 @@ def create_cairo_font_face_for_file(filename, faceindex=0, loadoptions=0):
     if not _initialized:
         # find shared objects
         import platform
+
         if platform.system() == "Darwin":
             _freetype_so = ct.CDLL("libfreetype.dylib")
             _cairo_so = ct.CDLL("libcairo.dylib")
