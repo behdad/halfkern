@@ -50,7 +50,7 @@ if __name__ == '__main__':
         if abs(kern_value - font_kern) <= kern.FONT_SIZE * .05:
             continue
 
-        if kern_value * 2 <= font_kern <= kern_value:
-            continue
+        #if kern_value * 2 <= font_kern <= kern_value:
+        #    continue
 
         print(bigram, kern_value, font_kern)
