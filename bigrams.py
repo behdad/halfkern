@@ -17,6 +17,8 @@ def extract_bigrams(txtfile, frqfile):
             break
 
         for first, second in zip(word, word[1:]):
+            if first in "0123456789" or second in "0123456789":
+                continue
             bigram = first + second
             bigrams[bigram] += freq
 
