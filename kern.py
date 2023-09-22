@@ -17,6 +17,8 @@ def kernel(width):
 FONT_FACE = None
 HB_FONT = None
 
+CONTEXTS = ("non", "HOH")
+
 FONT_SIZE = 64
 
 KERNEL_WIDTH = round(FONT_SIZE * 0.2)
@@ -180,12 +182,10 @@ def showcase_in_context(l, r, kern1, kern2):
     descent = round(font_extents[1])
     height = ascent + descent
 
-    context_strs = ("non", "HOH")
-
     for op in ("MEASURE", "CUT"):
         width = 0
         lines = 0
-        for context in context_strs:
+        for context in CONTEXTS:
             textl = context + l
             textr = r + context
             for kern in (0, kern1, kern2):
@@ -278,11 +278,14 @@ if __name__ == "__main__":
     )
     parser.add_argument("font", metavar="font.ttf", help="Font file.")
     parser.add_argument("text", metavar="text", help="Pair to kern.")
+    parser.add_argument("-c", "--context", metavar="context", action="append", help="Context texts to show.")
 
     options = parser.parse_args(sys.argv[1:])
 
     font = options.font
     text = options.text
+    if options.context:
+        CONTEXTS = options.context
 
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     HB_FONT = create_hb_font(font)
