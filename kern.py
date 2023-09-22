@@ -23,8 +23,6 @@ def kernel(width):
 FONT_FACE = None
 HB_FONT = None
 
-CONTEXTS = ("non", "HOH")
-
 FONT_SIZE = 64
 
 KERNEL_WIDTH = round(FONT_SIZE * 0.2)
@@ -52,7 +50,7 @@ def blur(surface, kernel=None):
 
     image = np.matrix(image, dtype="uint8")
     stride = (width + 3) & ~3
-    padding = b'\0' * (stride - width)
+    padding = b"\0" * (stride - width)
     data = bytearray()
     for i in range(height):
         data.extend(image[i].tobytes())
@@ -182,6 +180,9 @@ def showcase(l, r, kern1, kern2):
     return ctx.get_target()
 
 
+CONTEXTS = ("non", "HOH")
+
+
 def showcase_in_context(l, r, kern1, kern2):
     measurement_ctx = create_surface_context(1, 1)
     font_extents = measurement_ctx.font_extents()
@@ -258,18 +259,22 @@ def actual_kern(l, r, scaled=True):
     return kern
 
 
+TUNING_CHARS = "lno"
+
+
 def find_s():
     global KERNEL_WIDTH, KERNEL, BIAS
     while True:
-        l = blur(create_surface_for_text("l"))
-        kern, sl = kern_pair(l, l, 0, blurred=True)
-        l = blur(create_surface_for_text("n"))
-        kern, sn = kern_pair(l, l, 0, blurred=True)
-        l = blur(create_surface_for_text("o"))
-        kern, so = kern_pair(l, l, 0, blurred=True)
-        s = min(sl, sn, so)
-        if s > max(sl, sn, so) / 2:
-            return s
+        ss = []
+        for c in TUNING_CHARS:
+            surface = blur(create_surface_for_text(c))
+            kern, s = kern_pair(surface, surface, 0, blurred=True)
+            ss.append(s)
+
+        min_s = min(ss)
+        max_s = max(ss)
+        if min_s > max_s / 2:
+            return min_s
 
         KERNEL_WIDTH += 2
         KERNEL = kernel(KERNEL_WIDTH)
