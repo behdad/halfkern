@@ -1,6 +1,8 @@
 from collections import defaultdict
 
 MIN_FREQ = 10
+ENCODING = "utf-8"
+#ENCODING = "iso8859-2"
 
 
 def extract_bigrams(txtfile, frqfile):
@@ -8,9 +10,9 @@ def extract_bigrams(txtfile, frqfile):
 
     for word, freq in zip(txtfile, frqfile):
         try:
-            word = word.strip().decode("utf-8")
+            word = word.strip().decode(ENCODING)
         except UnicodeDecodeError:
-            word = word.strip().decode("latin1")
+            continue
         freq = int(freq)
 
         if freq < MIN_FREQ:
