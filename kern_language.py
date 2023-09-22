@@ -47,7 +47,7 @@ if __name__ == '__main__':
         if kern_value == 0 and font_kern == 0:
             continue
 
-        if abs(kern_value - font_kern) <= kern.FONT_SIZE * .05:
+        if abs(kern_value - font_kern) <= kern.FONT_SIZE * .04:
             continue
 
         #if kern_value * 2 <= font_kern <= kern_value:
