@@ -226,11 +226,10 @@ def create_hb_font(fontfile):
     blob = hb.Blob.from_file_path(fontfile)
     face = hb.Face(blob, 0)
     font = hb.Font(face)
-    font.scale = (FONT_SIZE, FONT_SIZE)
     return font
 
 
-def actual_kern(l, r):
+def actual_kern(l, r, scaled=True):
     buf = hb.Buffer()
     buf.add_str(l)
     buf.guess_segment_properties()
@@ -250,7 +249,10 @@ def actual_kern(l, r):
     hb.shape(HB_FONT, buf)
     combined_advance = sum(g.x_advance for g in buf.glyph_positions)
 
-    return combined_advance - (l_advance + r_advance)
+    kern = combined_advance - (l_advance + r_advance)
+    if scaled:
+        kern = round(kern * FONT_SIZE / HB_FONT.face.upem)
+    return kern
 
 
 def find_s():
@@ -312,6 +314,7 @@ if __name__ == "__main__":
         print("Couldn't autokern")
         kern = 0
     font_kern = actual_kern(text[0], text[1])
+    font_kern_upem = actual_kern(text[0], text[1], scaled=False)
 
     upem = HB_FONT.face.upem
     print(
@@ -321,6 +324,7 @@ if __name__ == "__main__":
         "(%u units)" % round(kern / FONT_SIZE * upem),
         "existing kern:",
         font_kern,
+        "(%u units)" % round(font_kern_upem),
     )
     print("Saving kern.png and kerned.png")
     s = showcase(l, r, kern, font_kern)
