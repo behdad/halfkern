@@ -14,14 +14,16 @@ def kernel(width):
     )
 
 
-KERNEL_WIDTH = 11
-KERNEL = kernel(KERNEL_WIDTH)
-BIAS = len(KERNEL) // 2
-
 FONT_FACE = None
+HB_FONT = None
+
 FONT_SIZE = 64
 
-HB_FONT = None
+KERNEL_WIDTH = round(FONT_SIZE * .2)
+if KERNEL_WIDTH % 2 == 0:
+    KERNEL_WIDTH += 1
+KERNEL = kernel(KERNEL_WIDTH)
+BIAS = len(KERNEL) // 2
 
 
 def blur(surface, kernel):
