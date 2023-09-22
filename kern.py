@@ -140,6 +140,10 @@ def kern_pair(l, r, min_overlap, blurred=False):
         if s >= min_overlap:
             break
 
+    if s == 0:
+        # No overlap
+        return None, 0
+
     # Return just half the kern
     return kern // 2, s
 
@@ -304,6 +308,9 @@ if __name__ == "__main__":
     r = create_surface_for_text(text[1])
 
     kern, s = kern_pair(l, r, s)
+    if kern is None:
+        print("Couldn't autokern")
+        kern = 0
     font_kern = actual_kern(text[0], text[1])
 
     upem = HB_FONT.face.upem

@@ -58,6 +58,8 @@ if __name__ == "__main__":
             continue
 
         kern_value, _ = kern.kern_pair(l, r, s, blurred=True)
+        if kern_value is None:
+            continue
         font_kern = kern.actual_kern(bigram[0], bigram[1])
         if kern_value == 0 and font_kern == 0:
             continue
