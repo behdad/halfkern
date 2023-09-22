@@ -3,6 +3,7 @@ import itertools
 
 MIN_FREQ = 10
 ENCODING = "utf-8"
+LETTERS_ONLY = False
 
 
 def extract_bigrams(txtfile, frqfile):
@@ -21,6 +22,10 @@ def extract_bigrams(txtfile, frqfile):
         for first, second in zip(word, word[1:]):
             if first in "0123456789" or second in "0123456789":
                 continue
+
+            if LETTERS_ONLY and (not first.isalpha() or not second.isalpha()):
+                continue
+
             bigram = first + second
             bigrams[bigram] += freq
 
@@ -66,6 +71,12 @@ if __name__ == "__main__":
         type=str,
         help="Text encoding. Default: utf-8",
     )
+    parser.add_argument(
+        "-l",
+        "--letters-only",
+        action="store_true",
+        help="Only list bigrams of letters. Default: False",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
@@ -73,6 +84,7 @@ if __name__ == "__main__":
     encoding = options.encoding or "utf-8"
 
     ENCODING = encoding
+    LETTERS_ONLY = options.letters_only
 
     bigrams = extract_bigrams_from_file(dictfile)
 

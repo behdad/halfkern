@@ -30,6 +30,12 @@ if __name__ == "__main__":
         type=str,
         help="Text encoding. Default: utf-8",
     )
+    parser.add_argument(
+        "-l",
+        "--letters-only",
+        action="store_true",
+        help="Only list bigrams of letters. Default: False",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
@@ -38,6 +44,7 @@ if __name__ == "__main__":
     encoding = options.encoding or "utf-8"
 
     bigrams.ENCODING = encoding
+    bigrams.LETTERS_ONLY = options.letters_only
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
     kern.HB_FONT = kern.create_hb_font(fontfile)
 
