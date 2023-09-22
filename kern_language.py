@@ -26,7 +26,7 @@ if __name__ == "__main__":
     s = kern.find_s()
 
     try:
-        txtfile = open(lang, "rb")
+        txtfile = (s if s.find(b'/') == -1 else s[:s.find(b'/')] for s in open(lang, "rb"))
         frqfile = itertools.cycle([bigrams.MIN_FREQ])
     except FileNotFoundError:
         import bz2
