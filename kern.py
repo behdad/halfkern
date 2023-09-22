@@ -59,6 +59,10 @@ def blur(surface, kernel):
 
     s2.mark_dirty()
 
+    ctx = cr.Context(s2)
+    ctx.set_source_surface(surface, 0, 0)
+    ctx.paint()
+
     return s2
 
 
@@ -118,7 +122,7 @@ def surface_sum(surface):
     s = 0
     for i in range(height):
         for j in range(width):
-            s += data[i * stride + j] ** .5
+            s += data[i * stride + j]
 
     return s
 
