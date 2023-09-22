@@ -3,11 +3,16 @@ import cairoft
 import uharfbuzz as hb
 import math
 
+
 def gaussian(x, a, b, c):
-    return a * math.exp(-(x - b)**2 / (2 * c**2))
+    return a * math.exp(-((x - b) ** 2) / (2 * c**2))
+
 
 def kernel(width):
-    return list(gaussian(x, 1, KERNEL_WIDTH // 2, KERNEL_WIDTH / 4) for x in range(KERNEL_WIDTH))
+    return list(
+        gaussian(x, 1, KERNEL_WIDTH // 2, KERNEL_WIDTH / 4) for x in range(KERNEL_WIDTH)
+    )
+
 
 KERNEL_WIDTH = 11
 KERNEL = kernel(KERNEL_WIDTH)
@@ -18,9 +23,10 @@ FONT_SIZE = 64
 
 HB_FONT = None
 
+
 def blur(surface, kernel):
     s = sum(kernel)
-    kernel = [x/s for x in kernel]
+    kernel = [x / s for x in kernel]
 
     data = surface.get_data()
     width = surface.get_width()
@@ -33,10 +39,10 @@ def blur(surface, kernel):
     for i in range(height):
         for j in range(width):
             p = 0
-            for k,v in enumerate(kernel):
+            for k, v in enumerate(kernel):
                 if j + k - BIAS >= 0 and j + k - BIAS < width:
-                    p += data[i*stride + j + k - BIAS] * v
-            d1[i*stride1 + j] = int(p)
+                    p += data[i * stride + j + k - BIAS] * v
+            d1[i * stride1 + j] = int(p)
 
     s2 = cr.ImageSurface(cr.FORMAT_A8, width, height)
     d2 = s2.get_data()
@@ -44,14 +50,15 @@ def blur(surface, kernel):
     for j in range(width):
         for i in range(height):
             p = 0
-            for k,v in enumerate(kernel):
+            for k, v in enumerate(kernel):
                 if i + k - BIAS >= 0 and i + k - BIAS < height:
                     p += d1[(i + k - BIAS) * stride1 + j] * v
-            d2[i*stride2 + j] = int(p)
+            d2[i * stride2 + j] = int(p)
 
     s2.mark_dirty()
 
     return s2
+
 
 def create_surface_context(width, height):
     surface = cr.ImageSurface(cr.FORMAT_A8, width, height)
@@ -61,6 +68,7 @@ def create_surface_context(width, height):
         ctx.set_font_face(FONT_FACE)
     ctx.set_font_size(FONT_SIZE)
     return ctx
+
 
 def create_surface_for_text(text):
     measurement_ctx = create_surface_context(1, 1)
@@ -78,6 +86,7 @@ def create_surface_for_text(text):
     ctx.show_text(text)
 
     return ctx.get_target()
+
 
 def overlap(l, r, kern=0):
     height = l.get_height()
@@ -97,6 +106,7 @@ def overlap(l, r, kern=0):
 
     return ctx.get_target()
 
+
 def surface_sum(surface):
     data = surface.get_data()
     width = surface.get_width()
@@ -106,12 +116,12 @@ def surface_sum(surface):
     s = 0
     for i in range(height):
         for j in range(width):
-            s += data[i*stride + j] ** 3
+            s += data[i * stride + j] ** 3
 
     return s
 
-def kern_pair(l, r, min_overlap, blurred=False):
 
+def kern_pair(l, r, min_overlap, blurred=False):
     if not blurred:
         l = blur(l, KERNEL)
         r = blur(r, KERNEL)
@@ -122,12 +132,15 @@ def kern_pair(l, r, min_overlap, blurred=False):
         if s >= min_overlap:
             break
 
-    return round(-((-kern) ** .5)), s
+    return round(-((-kern) ** 0.5)), s
+
 
 def showcase(l, r, kern1, kern2):
     height = l.get_height()
 
-    ctx = create_surface_context(l.get_width() + r.get_width() - 2 * BIAS, height * 3 - 2 * BIAS)
+    ctx = create_surface_context(
+        l.get_width() + r.get_width() - 2 * BIAS, height * 3 - 2 * BIAS
+    )
 
     ctx.set_source_surface(l, 0, 0)
     ctx.paint()
@@ -146,12 +159,14 @@ def showcase(l, r, kern1, kern2):
 
     return ctx.get_target()
 
+
 def create_hb_font(fontfile):
     blob = hb.Blob.from_file_path(fontfile)
     face = hb.Face(blob, 0)
     font = hb.Font(face)
     font.scale = (FONT_SIZE, FONT_SIZE)
     return font
+
 
 def actual_kern(l, r):
     buf = hb.Buffer()
@@ -179,11 +194,11 @@ def actual_kern(l, r):
 def find_s():
     global KERNEL_WIDTH, KERNEL, BIAS
     while True:
-        l = create_surface_for_text('l')
+        l = create_surface_for_text("l")
         kern, sl = kern_pair(l, l, 0)
-        l = create_surface_for_text('n')
+        l = create_surface_for_text("n")
         kern, sn = kern_pair(l, l, 0)
-        l = create_surface_for_text('o')
+        l = create_surface_for_text("o")
         kern, so = kern_pair(l, l, 0)
         s = min(sl, sn, so)
         if s > 0:
@@ -196,6 +211,7 @@ def find_s():
 
 if __name__ == "__main__":
     import sys
+
     font = sys.argv[1]
     text = sys.argv[2]
 
