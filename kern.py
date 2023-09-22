@@ -1,6 +1,8 @@
 import cairo as cr
 import cairoft
 import uharfbuzz as hb
+import numpy as np
+from scipy import signal
 import math
 
 
@@ -29,45 +31,39 @@ BIAS = len(KERNEL) // 2
 
 
 def blur(surface, kernel=None):
+
     if kernel is None:
         kernel = KERNEL
     s = sum(kernel)
-    kernel = [x / s for x in kernel]
+    kernel = np.matrix([x / s for x in kernel])
+    kernel = kernel.transpose() * kernel
 
-    data = surface.get_data()
     width = surface.get_width()
     height = surface.get_height()
     stride = surface.get_stride()
+    data = surface.get_data()
 
-    s1 = cr.ImageSurface(cr.FORMAT_A8, width, height)
-    d1 = s1.get_data()
-    stride1 = s1.get_stride()
+    image = []
     for i in range(height):
-        for j in range(width):
-            p = 0
-            for k, v in enumerate(kernel):
-                if j + k - BIAS >= 0 and j + k - BIAS < width:
-                    p += data[i * stride + j + k - BIAS] * v
-            d1[i * stride1 + j] = int(p)
+        image.append(data[i * stride : i * stride + width])
+    image = np.matrix(image, dtype="uint8")
 
-    s2 = cr.ImageSurface(cr.FORMAT_A8, width, height)
-    d2 = s2.get_data()
-    stride2 = s2.get_stride()
-    for j in range(width):
-        for i in range(height):
-            p = 0
-            for k, v in enumerate(kernel):
-                if i + k - BIAS >= 0 and i + k - BIAS < height:
-                    p += d1[(i + k - BIAS) * stride1 + j] * v
-            d2[i * stride2 + j] = int(p)
+    image = signal.convolve2d(image, kernel, mode="same")
 
-    s2.mark_dirty()
+    image = np.matrix(image, dtype="uint8")
+    stride = (width + 3) & ~3
+    padding = [0] * (stride - width)
+    data = bytearray()
+    for i in range(height):
+        data.extend(image[i].tobytes())
+        data.extend(padding)
 
-    ctx = cr.Context(s2)
+    blurred = cr.ImageSurface.create_for_data(data, cr.FORMAT_A8, width, height, stride)
+    ctx = cr.Context(blurred)
     ctx.set_source_surface(surface, 0, 0)
     ctx.paint()
 
-    return s2
+    return blurred
 
 
 def create_surface_context(width, height):
@@ -286,7 +282,13 @@ if __name__ == "__main__":
     )
     parser.add_argument("font", metavar="font.ttf", help="Font file.")
     parser.add_argument("text", metavar="text", help="Pair to kern.")
-    parser.add_argument("-c", "--context", metavar="context", action="append", help="Context texts to show.")
+    parser.add_argument(
+        "-c",
+        "--context",
+        metavar="context",
+        action="append",
+        help="Context texts to show.",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
