@@ -1,4 +1,5 @@
-pycairo
-uharfbuzz
+freetype-py
 numpy
+pycairo
 scipy
+uharfbuzz
