@@ -1,0 +1,4 @@
+pycairo
+uharfbuzz
+numpy
+scipy
