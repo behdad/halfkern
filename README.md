@@ -1,4 +1,4 @@
-# kern-language
+# halfkern
 Font kerning audit tool
 
 ## Usage
