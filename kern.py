@@ -132,7 +132,7 @@ def overlap(l, r, kern=0):
 def surface_sum(surface):
     data = surface.get_data()
 
-    return max(np.array(data, dtype="uint8"))
+    return max(np.array(data, dtype="uint8") ** 2)
 
     # Slower but takes stride into account
 
@@ -143,7 +143,7 @@ def surface_sum(surface):
     s = 0
     for i in range(height):
         for j in range(width):
-            s = max(s, data[i * stride + j])
+            s = max(s, data[i * stride + j] ** 2)
 
     return s
 
