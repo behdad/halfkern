@@ -50,11 +50,8 @@ def blur(surface, kernel=None):
 
     image = np.matrix(image, dtype="uint8")
     stride = (width + 3) & ~3
-    padding = b"\0" * (stride - width)
-    data = bytearray()
-    for i in range(height):
-        data.extend(image[i].tobytes())
-        data.extend(padding)
+    padding = ((0, 0), (0, stride - width))
+    data = bytearray(np.pad(image, padding).tobytes())
 
     blurred = cr.ImageSurface.create_for_data(data, cr.FORMAT_A8, width, height, stride)
     ctx = cr.Context(blurred)
