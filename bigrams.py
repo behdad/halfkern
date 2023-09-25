@@ -20,7 +20,7 @@ def extract_bigrams(txtfile, frqfile = None):
         freq = int(freq)
 
         if freq < MIN_FREQ:
-            break
+            continue
 
         for first, second in zip(word, word[1:]):
             if first in "0123456789" or second in "0123456789":
