@@ -6,7 +6,10 @@ ENCODING = "utf-8"
 LETTERS_ONLY = False
 
 
-def extract_bigrams(txtfile, frqfile):
+def extract_bigrams(txtfile, frqfile = None):
+    if frqfile is None:
+        frqfile = itertools.cycle([MIN_FREQ])
+
     bigrams = defaultdict(int)
 
     for word, freq in zip(txtfile, frqfile):
@@ -43,7 +46,7 @@ def extract_bigrams_from_file(filename):
         txtfile = open(filename, "rb")
         # Assume hunspell dictionary format; drop everything after "/"
         txtfile = (s if s.find(b"/") == -1 else s[: s.find(b"/")] for s in txtfile)
-        frqfile = itertools.cycle([MIN_FREQ])
+        frqfile = None
     except FileNotFoundError:
         import bz2
 
