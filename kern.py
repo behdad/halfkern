@@ -16,7 +16,6 @@ def kernel(width):
     )
     s = sum(kernel)
     kernel = np.matrix([x / s for x in kernel], dtype="float32")
-    kernel = kernel.transpose() * kernel
     return kernel
 
 
@@ -29,7 +28,7 @@ KERNEL_WIDTH = round(FONT_SIZE * 0.2)
 if KERNEL_WIDTH % 2 == 0:
     KERNEL_WIDTH += 1
 KERNEL = kernel(KERNEL_WIDTH)
-BIAS = len(KERNEL) // 2
+BIAS = KERNEL_WIDTH // 2
 
 
 def blur(surface, kernel=None):
@@ -46,7 +45,10 @@ def blur(surface, kernel=None):
         image.append(data[i * stride : i * stride + width])
     image = np.matrix(image, dtype="uint8")
 
-    image = signal.convolve2d(image, kernel, mode="same")
+    image = signal.convolve(image, kernel, mode="same")
+    image = image.transpose()
+    image = signal.convolve(image, kernel, mode="same")
+    image = image.transpose()
 
     image = np.matrix(image, dtype="uint8")
     stride = (width + 3) & ~3
@@ -112,7 +114,7 @@ def overlap(l, r, kern=0):
     assert height == r.get_height()
 
     l_offset = -(l.advance + l.origin[0]) + r.origin[0] - kern
-    width = min(l.width + l_offset, r.width)
+    width = max(0, min(l.width + l_offset, r.width))
 
     ctx = create_surface_context(width, height)
 
@@ -314,7 +316,7 @@ def find_s():
 
         KERNEL_WIDTH += 2
         KERNEL = kernel(KERNEL_WIDTH)
-        BIAS = len(KERNEL) // 2
+        BIAS = KERNEL_WIDTH // 2
 
 
 if __name__ == "__main__":
