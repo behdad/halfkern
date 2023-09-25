@@ -7,10 +7,11 @@ import unicodedata
 
 @functools.cache
 def create_blurred_surface_for_text(text):
-    surface = kern.create_surface_for_text(text)
-    if kern.surface_sum(surface) == 0:
+    glyph = kern.Glyph(text)
+    if kern.surface_sum(glyph.surface) == 0:
         return None
-    return kern.blur(surface)
+    glyph.surface = kern.blur(glyph.surface)
+    return glyph
 
 
 if __name__ == "__main__":
