@@ -13,14 +13,14 @@ def extract_bigrams(txtfile, frqfile = None):
     bigrams = defaultdict(int)
 
     for word, freq in zip(txtfile, frqfile):
+        if freq < MIN_FREQ:
+            continue
+
         try:
             word = word.strip().decode(ENCODING)
         except UnicodeDecodeError:
             continue
         freq = int(freq)
-
-        if freq < MIN_FREQ:
-            continue
 
         for first, second in zip(word, word[1:]):
             if first in "0123456789" or second in "0123456789":
