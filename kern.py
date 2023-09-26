@@ -22,7 +22,7 @@ def kernel(width):
 FONT_FACE = None
 HB_FONT = None
 
-FONT_SIZE = 64
+FONT_SIZE = 100
 
 KERNEL_WIDTH = round(FONT_SIZE * 0.2)
 if KERNEL_WIDTH % 2 == 0:
