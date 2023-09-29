@@ -35,7 +35,7 @@ def extract_bigrams(txtfile, frqfile = None):
     bigrams = dict(sorted(((k, v) for k, v in bigrams.items()), key=lambda kv: -kv[1]))
     total = sum(bigrams.values())
     bigrams = dict((k, v / total) for k, v in bigrams.items())
-    cutoff = iter(bigrams.values()).__next__() * 1e-6
+    cutoff = next(iter(bigrams.values())) * 1e-6
     bigrams = dict((k, v) for k, v in bigrams.items() if v > cutoff)
 
     return bigrams
