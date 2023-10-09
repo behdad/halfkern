@@ -3,6 +3,7 @@ import kern
 import cairoft
 import functools
 import unicodedata
+from collections import defaultdict
 
 
 @functools.cache
@@ -24,7 +25,7 @@ if __name__ == "__main__":
         description="Find missing kerning pairs for a font & language pair.",
     )
     parser.add_argument("font", metavar="font.ttf", help="Font file.")
-    parser.add_argument("dict", metavar="dict", help="Dictionary file.")
+    parser.add_argument("dict", metavar="dict", nargs="+", help="Dictionary file.")
     parser.add_argument(
         "-e",
         "--encoding",
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     options = parser.parse_args(sys.argv[1:])
 
     fontfile = options.font
-    dictfile = options.dict
+    dictfiles = options.dict
     encoding = options.encoding or "utf-8"
     tolerance = options.tolerance or 0.033
     if tolerance >= 1:
@@ -60,7 +61,11 @@ if __name__ == "__main__":
 
     min_s, max_s = kern.find_s()
 
-    all_bigrams = bigrams.extract_bigrams_from_file(dictfile)
+    all_bigrams = defaultdict(int)
+    for dictfile in dictfiles:
+        this_bigrams = bigrams.extract_bigrams_from_file(dictfile)
+        for k,v in this_bigrams.items():
+            all_bigrams[k] += v
     for bigram in all_bigrams:
         if (
             unicodedata.category(bigram[0]) == "Mn"
