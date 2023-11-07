@@ -313,12 +313,16 @@ def find_s():
         min_s = min(ss)
         max_s = max(ss)
         if min_s > max_s / 2:
-            return min_s, max_s
+            break
 
         KERNEL_WIDTH += 2
         KERNEL = kernel(KERNEL_WIDTH)
         BIAS = KERNEL_WIDTH // 2
 
+    if KERNEL_WIDTH > FONT_SIZE:
+        raise Exception("Font not well-kerned? Monospace?")
+
+    return min_s, max_s
 
 if __name__ == "__main__":
     import sys
@@ -350,6 +354,7 @@ if __name__ == "__main__":
     HB_FONT = create_hb_font(font)
 
     if len(text) == 1:
+        _, _ = find_s()
         glyph = Glyph(text)
         glyph.surface = blur(glyph.surface)
         glyph.surface.write_to_png("kern.png")
