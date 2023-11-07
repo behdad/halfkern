@@ -6,7 +6,7 @@ ENCODING = "utf-8"
 LETTERS_ONLY = False
 
 
-def extract_ngrams(n, txtfile, *, frqfile = None, cutoff = .999, min_freq = MIN_FREQ):
+def extract_ngrams(n, txtfile, *, frqfile=None, cutoff=0.999, min_freq=MIN_FREQ):
     if frqfile is None:
         frqfile = itertools.cycle([min_freq])
 
@@ -48,7 +48,7 @@ def extract_ngrams(n, txtfile, *, frqfile = None, cutoff = .999, min_freq = MIN_
     return new_ngrams
 
 
-def extract_ngrams_from_file(n, filename, *, cutoff = .999, min_freq = MIN_FREQ):
+def extract_ngrams_from_file(n, filename, *, cutoff=0.999, min_freq=MIN_FREQ):
     try:
         txtfile = open(filename, "rb")
         # Assume hunspell dictionary format; drop everything after "/"
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     dictfile = options.dict
     encoding = options.encoding or "utf-8"
     ngram = options.ngram or 2
-    cutoff = options.cutoff or .999
+    cutoff = options.cutoff or 0.999
 
     ENCODING = encoding
     LETTERS_ONLY = options.letters_only

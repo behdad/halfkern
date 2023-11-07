@@ -65,10 +65,10 @@ if __name__ == "__main__":
     all_trigrams = defaultdict(int)
     for dictfile in dictfiles:
         this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile)
-        for k,v in this_bigrams.items():
+        for k, v in this_bigrams.items():
             all_bigrams[k] += v
         this_trigrams = ngrams.extract_ngrams_from_file(3, dictfile)
-        for k,v in this_trigrams.items():
+        for k, v in this_trigrams.items():
             all_trigrams[k] += v
 
     kern_values = defaultdict(int)

@@ -74,7 +74,6 @@ def create_surface_context(width, height):
 
 
 class Glyph:
-
     def __init__(self, text):
         self.text = text
 
@@ -99,12 +98,16 @@ class Glyph:
 
     def get_width(self):
         return self.width
+
     def get_height(self):
         return self.height
+
     def get_advance(self):
         return self.advance
+
     def get_stride(self):
         return self.surface.get_stride()
+
     def get_data(self):
         return self.surface.get_data()
 
@@ -156,7 +159,6 @@ def kern_pair(l, r, min_overlap, max_overlap, blurred=False):
         r.surface = blur(r.surface)
 
     try:
-
         kern = 0
         s = surface_sum(overlap(l, r, kern))
 
@@ -180,7 +182,6 @@ def kern_pair(l, r, min_overlap, max_overlap, blurred=False):
     finally:
         l.surface = old_l_surface
         r.surface = old_r_surface
-
 
     # Return just half the kern
     return kern // 2 if kern < 0 else kern, s
