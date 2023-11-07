@@ -1,4 +1,4 @@
-import bigrams
+import ngrams
 import kern
 import cairoft
 import functools
@@ -54,8 +54,8 @@ if __name__ == "__main__":
     if tolerance >= 1:
         tolerance = tolerance / kern.FONT_SIZE
 
-    bigrams.ENCODING = encoding
-    bigrams.LETTERS_ONLY = options.letters_only
+    ngrams.ENCODING = encoding
+    ngrams.LETTERS_ONLY = options.letters_only
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
     kern.HB_FONT = kern.create_hb_font(fontfile)
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     all_bigrams = defaultdict(int)
     for dictfile in dictfiles:
-        this_bigrams = bigrams.extract_bigrams_from_file(dictfile)
+        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile)
         for k,v in this_bigrams.items():
             all_bigrams[k] += v
     for bigram in all_bigrams:

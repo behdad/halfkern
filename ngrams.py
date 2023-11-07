@@ -6,11 +6,11 @@ ENCODING = "utf-8"
 LETTERS_ONLY = False
 
 
-def extract_bigrams(txtfile, frqfile = None):
+def extract_ngrams(n, txtfile, frqfile = None):
     if frqfile is None:
         frqfile = itertools.cycle([MIN_FREQ])
 
-    bigrams = defaultdict(int)
+    ngrams = defaultdict(int)
 
     for word, freq in zip(txtfile, frqfile):
         if freq < MIN_FREQ:
@@ -22,26 +22,28 @@ def extract_bigrams(txtfile, frqfile = None):
             continue
         freq = int(freq)
 
-        for first, second in zip(word, word[1:]):
-            if first in "0123456789" or second in "0123456789":
+        if len(word) < n:
+            continue
+
+        words = [word[i:] for i in range(n)]
+
+        for ngram in zip(*words):
+            if LETTERS_ONLY and any(not c.isalpha() for c in ngram):
                 continue
 
-            if LETTERS_ONLY and (not first.isalpha() or not second.isalpha()):
-                continue
+            ngram = "".join(ngram)
+            ngrams[ngram] += freq
 
-            bigram = first + second
-            bigrams[bigram] += freq
+    ngrams = dict(sorted(((k, v) for k, v in ngrams.items()), key=lambda kv: -kv[1]))
+    total = sum(ngrams.values())
+    ngrams = dict((k, v / total) for k, v in ngrams.items())
+    cutoff = next(iter(ngrams.values())) * 1e-6
+    ngrams = dict((k, v) for k, v in ngrams.items() if v > cutoff)
 
-    bigrams = dict(sorted(((k, v) for k, v in bigrams.items()), key=lambda kv: -kv[1]))
-    total = sum(bigrams.values())
-    bigrams = dict((k, v / total) for k, v in bigrams.items())
-    cutoff = next(iter(bigrams.values())) * 1e-6
-    bigrams = dict((k, v) for k, v in bigrams.items() if v > cutoff)
-
-    return bigrams
+    return ngrams
 
 
-def extract_bigrams_from_file(filename):
+def extract_ngrams_from_file(n, filename):
     try:
         txtfile = open(filename, "rb")
         # Assume hunspell dictionary format; drop everything after "/"
@@ -54,7 +56,7 @@ def extract_bigrams_from_file(filename):
         txtfile = bz2.open(filename + ".txt.bz2")
         frqfile = bz2.open(filename + ".frq.bz2")
 
-    return extract_bigrams(txtfile, frqfile)
+    return extract_ngrams(n, txtfile, frqfile)
 
 
 if __name__ == "__main__":
@@ -64,10 +66,16 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        "python3 bigrams.py",
-        description="Find bigrams from a language dictionary.",
+        "python3 ngrams.py",
+        description="Find ngrams from a language dictionary.",
     )
     parser.add_argument("dict", metavar="dict", help="Dictionary file.")
+    parser.add_argument(
+        "-n",
+        "--ngram",
+        type=int,
+        help="Length of ngrams. Default: 2",
+    )
     parser.add_argument(
         "-e",
         "--encoding",
@@ -78,18 +86,19 @@ if __name__ == "__main__":
         "-l",
         "--letters-only",
         action="store_true",
-        help="Only list bigrams of letters. Default: False",
+        help="Only list ngrams of letters. Default: False",
     )
 
     options = parser.parse_args(sys.argv[1:])
 
     dictfile = options.dict
     encoding = options.encoding or "utf-8"
+    ngram = options.ngram or 2
 
     ENCODING = encoding
     LETTERS_ONLY = options.letters_only
 
-    bigrams = extract_bigrams_from_file(dictfile)
+    ngrams = extract_ngrams_from_file(ngram, dictfile)
 
-    for bigram, freq in bigrams.items():
-        print(bigram, freq)
+    for ngram, freq in ngrams.items():
+        print(ngram, freq)
