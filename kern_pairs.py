@@ -21,7 +21,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        "python3 kern_language.py",
+        "python3 kern_pairs.py",
         description="Find missing kerning pairs for a font & language pair.",
     )
     parser.add_argument("font", metavar="font.ttf", help="Font file.")

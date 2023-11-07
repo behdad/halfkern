@@ -326,7 +326,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        "python3 kern.py",
+        "python3 kern_pair.py",
         description="Autokern a pair of characters.",
     )
     parser.add_argument("font", metavar="font.ttf", help="Font file.")
