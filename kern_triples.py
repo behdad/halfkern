@@ -1,5 +1,5 @@
 import ngrams
-import kern
+import kern_pair as kern
 import cairoft
 import functools
 import unicodedata
