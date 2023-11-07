@@ -14,14 +14,14 @@ The tool currently does _not_ store autokerning results in the font.
 ## Usage
 
 ```
-$ python3 kern_language.py FontFile.ttf dictionary.txt
+$ python3 kern_pairs.py FontFile.ttf dictionary.txt
 $ python3 kern.py FontFile.ttf PairString
 ```
 
 ## Example
 
 ```
-$ python3 kern_language.py Roboto-Regular.ttf /usr/share/dict/words
+$ python3 kern_pairs.py Roboto-Regular.ttf /usr/share/dict/words
 fi 0 -4
 lt 4 0
 rb 4 0
