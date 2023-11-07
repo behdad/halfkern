@@ -1,5 +1,5 @@
 import ngrams
-import kern
+import kern_pair as kern
 import cairoft
 import functools
 import unicodedata
@@ -44,6 +44,12 @@ if __name__ == "__main__":
         type=float,
         help="Tolerance for kerning value. Default: 0.033.",
     )
+    parser.add_argument(
+        "-c",
+        "--cutoff",
+        type=float,
+        help="Cutoff probability. Default: .999",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
@@ -53,6 +59,9 @@ if __name__ == "__main__":
     tolerance = options.tolerance or 0.033
     if tolerance >= 1:
         tolerance = tolerance / kern.FONT_SIZE
+    cutoff = options.cutoff or .999
+    if cutoff >= 1:
+        cutoff = cutoff / 100.
 
     ngrams.ENCODING = encoding
     ngrams.LETTERS_ONLY = options.letters_only
@@ -63,7 +72,7 @@ if __name__ == "__main__":
 
     all_bigrams = defaultdict(int)
     for dictfile in dictfiles:
-        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile)
+        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile, cutoff=cutoff)
         for k,v in this_bigrams.items():
             all_bigrams[k] += v
     for bigram in all_bigrams:

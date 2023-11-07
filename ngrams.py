@@ -6,14 +6,14 @@ ENCODING = "utf-8"
 LETTERS_ONLY = False
 
 
-def extract_ngrams(n, txtfile, frqfile = None):
+def extract_ngrams(n, txtfile, *, frqfile = None, cutoff = .999, min_freq = MIN_FREQ):
     if frqfile is None:
-        frqfile = itertools.cycle([MIN_FREQ])
+        frqfile = itertools.cycle([min_freq])
 
     ngrams = defaultdict(int)
 
     for word, freq in zip(txtfile, frqfile):
-        if freq < MIN_FREQ:
+        if freq < min_freq:
             continue
 
         try:
@@ -37,13 +37,18 @@ def extract_ngrams(n, txtfile, frqfile = None):
     ngrams = dict(sorted(((k, v) for k, v in ngrams.items()), key=lambda kv: -kv[1]))
     total = sum(ngrams.values())
     ngrams = dict((k, v / total) for k, v in ngrams.items())
-    cutoff = next(iter(ngrams.values())) * 1e-6
-    ngrams = dict((k, v) for k, v in ngrams.items() if v > cutoff)
+    total = 0
+    new_ngrams = {}
+    for k, v in ngrams.items():
+        total += v
+        if total > cutoff:
+            break
+        new_ngrams[k] = v
 
-    return ngrams
+    return new_ngrams
 
 
-def extract_ngrams_from_file(n, filename):
+def extract_ngrams_from_file(n, filename, *, cutoff = .999, min_freq = MIN_FREQ):
     try:
         txtfile = open(filename, "rb")
         # Assume hunspell dictionary format; drop everything after "/"
@@ -56,7 +61,7 @@ def extract_ngrams_from_file(n, filename):
         txtfile = bz2.open(filename + ".txt.bz2")
         frqfile = bz2.open(filename + ".frq.bz2")
 
-    return extract_ngrams(n, txtfile, frqfile)
+    return extract_ngrams(n, txtfile, frqfile=frqfile, cutoff=cutoff, min_freq=min_freq)
 
 
 if __name__ == "__main__":
@@ -77,6 +82,12 @@ if __name__ == "__main__":
         help="Length of ngrams. Default: 2",
     )
     parser.add_argument(
+        "-c",
+        "--cutoff",
+        type=float,
+        help="Cutoff probability. Default: .999",
+    )
+    parser.add_argument(
         "-e",
         "--encoding",
         type=str,
@@ -94,11 +105,12 @@ if __name__ == "__main__":
     dictfile = options.dict
     encoding = options.encoding or "utf-8"
     ngram = options.ngram or 2
+    cutoff = options.cutoff or .999
 
     ENCODING = encoding
     LETTERS_ONLY = options.letters_only
 
-    ngrams = extract_ngrams_from_file(ngram, dictfile)
+    ngrams = extract_ngrams_from_file(ngram, dictfile, cutoff=cutoff)
 
     for ngram, freq in ngrams.items():
         print(ngram, freq)
