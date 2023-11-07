@@ -15,7 +15,7 @@ The tool currently does _not_ store autokerning results in the font.
 
 ```
 $ python3 kern_pairs.py FontFile.ttf dictionary.txt
-$ python3 kern.py FontFile.ttf PairString
+$ python3 kern_pair.py FontFile.ttf PairString
 ```
 
 ## Example
@@ -76,9 +76,9 @@ The `-l` or `--letters-only` makes the tool only consider kerning between
 two letters (ie. no punctuation).  The tool also ignores digits, since they
 typically have a fixed width and no kerning by design.
 
-To inspect the pairs reported, you can use the `kern.py` tool:
+To inspect the pairs reported, you can use the `kern_pair.py` tool:
 ```
-$ python3 kern.py Roboto-Regular.ttf LT
+$ python3 kern_pair.py Roboto-Regular.ttf LT
 LT autokern: -9 (-184 units) existing kern: -13 (-275 units)
 Saving kern.png and kerned.png
 ```
