@@ -39,6 +39,13 @@ if __name__ == "__main__":
         help="Only list bigrams of letters. Default: False",
     )
     parser.add_argument(
+        "-r",
+        "--reduce",
+        metavar="function",
+        type=str,
+        help="Function to reduce overlaps, eg. 'sum' or 'max'. Default: max.",
+    )
+    parser.add_argument(
         "-t",
         "--tolerance",
         type=float,
@@ -62,13 +69,16 @@ if __name__ == "__main__":
     cutoff = options.cutoff or 0.999
     if cutoff >= 1:
         cutoff = cutoff / 100.0
+    import builtins
+    reduce = getattr(builtins, options.reduce or "max")
+    assert reduce in {max, sum}
 
     ngrams.ENCODING = encoding
     ngrams.LETTERS_ONLY = options.letters_only
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
     kern.HB_FONT = kern.create_hb_font(fontfile)
 
-    min_s, max_s = kern.find_s()
+    min_s, max_s = kern.find_s(reduce=reduce)
 
     all_bigrams = defaultdict(int)
     for dictfile in dictfiles:
@@ -88,7 +98,7 @@ if __name__ == "__main__":
         if l is None or r is None:
             continue
 
-        kern_value, _ = kern.kern_pair(l, r, min_s, max_s, blurred=True)
+        kern_value, _ = kern.kern_pair(l, r, min_s, max_s, blurred=True, reduce=reduce)
         if kern_value is None:
             continue
         font_kern = kern.actual_kern(bigram[0], bigram[1])
