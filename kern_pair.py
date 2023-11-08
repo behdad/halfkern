@@ -154,7 +154,7 @@ def surface_sum(surface, func=max):
     return s
 
 
-def kern_pair(l, r, min_overlap, max_overlap, blurred=False):
+def kern_pair(l, r, min_overlap, max_overlap, *, reduce=max, blurred=False):
     old_l_surface = l.surface
     old_r_surface = r.surface
     if not blurred:
@@ -163,12 +163,12 @@ def kern_pair(l, r, min_overlap, max_overlap, blurred=False):
 
     try:
         kern = 0
-        s = surface_sum(overlap(l, r, kern))
+        s = surface_sum(overlap(l, r, kern), func=reduce)
 
         if s < min_overlap:
             for kern in range(-1, -2 * BIAS - 1, -1):
                 o = overlap(l, r, kern)
-                s = surface_sum(o)
+                s = surface_sum(o, func=reduce)
                 if s >= min_overlap:
                     break
             else:
@@ -176,7 +176,7 @@ def kern_pair(l, r, min_overlap, max_overlap, blurred=False):
         elif s > max_overlap:
             for kern in range(+1, +2 * BIAS + 1, +1):
                 o = overlap(l, r, kern)
-                s = surface_sum(o)
+                s = surface_sum(o, func=reduce)
                 if s <= max_overlap:
                     break
             else:
@@ -303,14 +303,14 @@ def actual_kern(l, r, scaled=True):
 TUNING_CHARS = "lno"
 
 
-def find_s():
+def find_s(*, reduce=max):
     global KERNEL_WIDTH, KERNEL, BIAS
     while True:
         ss = []
         for c in TUNING_CHARS:
             glyph = Glyph(c)
             glyph.surface = blur(glyph.surface)
-            kern, s = kern_pair(glyph, glyph, 0, 1e10, blurred=True)
+            kern, s = kern_pair(glyph, glyph, 0, 1e10, blurred=True, reduce=reduce)
             ss.append(s)
 
         min_s = min(ss)
@@ -345,6 +345,13 @@ if __name__ == "__main__":
         action="append",
         help="Context texts to show.",
     )
+    parser.add_argument(
+        "-r",
+        "--reduce",
+        metavar="function",
+        type=str,
+        help="Function to reduce overlaps, eg. 'sum' or 'max'. Default: max.",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
@@ -353,11 +360,15 @@ if __name__ == "__main__":
     if options.context:
         CONTEXTS = options.context
 
+    import builtins
+    reduce = getattr(builtins, options.reduce or "max")
+    assert reduce in {max, sum}
+
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     HB_FONT = create_hb_font(font)
 
     if len(text) == 1:
-        _, _ = find_s()
+        _, _ = find_s(reduce=reduce)
         glyph = Glyph(text)
         glyph.surface = blur(glyph.surface)
         glyph.surface.write_to_png("kern.png")
@@ -365,12 +376,12 @@ if __name__ == "__main__":
 
     assert len(text) == 2
 
-    min_s, max_s = find_s()
+    min_s, max_s = find_s(reduce=reduce)
 
     l = Glyph(text[0])
     r = Glyph(text[1])
 
-    kern, s = kern_pair(l, r, min_s, max_s)
+    kern, s = kern_pair(l, r, min_s, max_s, reduce=reduce)
     if kern is None:
         print("Couldn't autokern")
         kern = 0
