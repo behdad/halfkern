@@ -24,14 +24,14 @@ HB_FONT = None
 
 FONT_SIZE = 100
 
-KERNEL_WIDTH = round(FONT_SIZE * 0.2)
+KERNEL_WIDTH = round(.2 * FONT_SIZE)
 if KERNEL_WIDTH % 2 == 0:
     KERNEL_WIDTH += 1
 KERNEL = kernel(KERNEL_WIDTH)
 BIAS = KERNEL_WIDTH // 2
 
 
-def blur(surface, kernel=None):
+def blur(surface, *, envelope="sdf", kernel=None):
     if kernel is None:
         kernel = KERNEL
 
@@ -43,12 +43,19 @@ def blur(surface, kernel=None):
     image = []
     for i in range(height):
         image.append(data[i * stride : i * stride + width])
-    image = np.matrix(image, dtype="uint8")
+    image = np.matrix(image, dtype="float")
 
-    image = signal.convolve(image, kernel, mode="same")
-    image = image.transpose()
-    image = signal.convolve(image, kernel, mode="same")
-    image = image.transpose()
+    if envelope == "sdf":
+        import skfmm
+        image = 255 - (255 / BIAS) * skfmm.distance(255 - image)
+        image = np.maximum(image, np.zeros(image.shape))
+    elif envelope == "gaussian":
+        image = signal.convolve(image, kernel, mode="same")
+        image = image.transpose()
+        image = signal.convolve(image, kernel, mode="same")
+        image = image.transpose()
+    else:
+        raise ValueError("Unknown envelope type: " + envelope)
 
     image = np.matrix(image, dtype="uint8")
     stride = (width + 3) & ~3
@@ -57,6 +64,13 @@ def blur(surface, kernel=None):
 
     blurred = cr.ImageSurface.create_for_data(data, cr.FORMAT_A8, width, height, stride)
     ctx = cr.Context(blurred)
+
+    if envelope == "sdf":
+        ctx.set_source_rgba(0, 0, 0, .5)
+        ctx.set_operator(cr.OPERATOR_DEST_OUT)
+        ctx.paint()
+
+    ctx.set_operator(cr.OPERATOR_OVER)
     ctx.set_source_surface(surface, 0, 0)
     ctx.paint()
 
@@ -154,12 +168,12 @@ def surface_sum(surface, func=max):
     return s
 
 
-def kern_pair(l, r, min_overlap, max_overlap, *, reduce=max, blurred=False):
+def kern_pair(l, r, min_overlap, max_overlap, *, reduce=max, envelope="sdf", blurred=False):
     old_l_surface = l.surface
     old_r_surface = r.surface
     if not blurred:
-        l.surface = blur(l.surface)
-        r.surface = blur(r.surface)
+        l.surface = blur(l.surface, envelope=envelope)
+        r.surface = blur(r.surface, envelope=envelope)
 
     try:
         kern = 0
@@ -303,13 +317,13 @@ def actual_kern(l, r, scaled=True):
 TUNING_CHARS = "lno"
 
 
-def find_s(*, reduce=max):
+def find_s(*, reduce=max, envelope="sdf"):
     global KERNEL_WIDTH, KERNEL, BIAS
     while True:
         ss = []
         for c in TUNING_CHARS:
             glyph = Glyph(c)
-            glyph.surface = blur(glyph.surface)
+            glyph.surface = blur(glyph.surface, envelope=envelope)
             kern, s = kern_pair(glyph, glyph, 0, 1e10, blurred=True, reduce=reduce)
             ss.append(s)
 
@@ -350,7 +364,14 @@ if __name__ == "__main__":
         "--reduce",
         metavar="function",
         type=str,
-        help="Function to reduce overlaps, eg. 'sum' or 'max'. Default: max.",
+        help="Function to reduce overlaps: 'sum' or 'max'. Default: max.",
+    )
+    parser.add_argument(
+        "-e",
+        "--envelope",
+        metavar="type",
+        type=str,
+        help="Envelope type: 'sdf' or 'gaussian'. Default: sdf.",
     )
 
     options = parser.parse_args(sys.argv[1:])
@@ -363,25 +384,26 @@ if __name__ == "__main__":
     import builtins
     reduce = getattr(builtins, options.reduce or "max")
     assert reduce in {max, sum}
+    envelope = options.envelope or "sdf"
 
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     HB_FONT = create_hb_font(font)
 
     if len(text) == 1:
-        _, _ = find_s(reduce=reduce)
+        _, _ = find_s(reduce=reduce, envelope=envelope)
         glyph = Glyph(text)
-        glyph.surface = blur(glyph.surface)
+        glyph.surface = blur(glyph.surface, envelope=envelope)
         glyph.surface.write_to_png("kern.png")
         sys.exit(0)
 
     assert len(text) == 2
 
-    min_s, max_s = find_s(reduce=reduce)
+    min_s, max_s = find_s(reduce=reduce, envelope=envelope)
 
     l = Glyph(text[0])
     r = Glyph(text[1])
 
-    kern, s = kern_pair(l, r, min_s, max_s, reduce=reduce)
+    kern, s = kern_pair(l, r, min_s, max_s, reduce=reduce, envelope=envelope)
     if kern is None:
         print("Couldn't autokern")
         kern = 0

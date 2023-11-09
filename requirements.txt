@@ -3,3 +3,4 @@ numpy
 pycairo
 scipy
 uharfbuzz
+scikit-fmm
