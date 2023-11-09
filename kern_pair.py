@@ -192,7 +192,7 @@ def surface_sum(surface, func=sum):
 
 
 def kern_pair(
-    l, r, min_overlap, max_overlap, *, reduce=max, envelope="sdf", blurred=False
+    l, r, min_overlap, max_overlap, *, reduce=max, envelope="sdf", blurred=False, half=True
 ):
     old_l_surface = l.surface
     old_r_surface = r.surface
@@ -225,8 +225,8 @@ def kern_pair(
         l.surface = old_l_surface
         r.surface = old_r_surface
 
-    # Return just half the kern
-    return kern // 2 if kern < 0 else kern, s
+    # Return just half the negative kern
+    return kern // 2 if half and kern < 0 else kern, s
 
 
 def showcase_pair(l, r, kern1, kern2):
