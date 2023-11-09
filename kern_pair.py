@@ -419,6 +419,10 @@ if __name__ == "__main__":
 
     options = parser.parse_args(sys.argv[1:])
 
+    if not options.text and not options.dict:
+        parser.print_help()
+        sys.exit(1)
+
     font = options.font
     texts = options.text
     if options.context:
