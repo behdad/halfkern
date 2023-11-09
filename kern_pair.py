@@ -336,8 +336,8 @@ def find_s(*, reduce=max, envelope="sdf"):
         KERNEL = kernel(KERNEL_WIDTH)
         BIAS = KERNEL_WIDTH // 2
 
-    if KERNEL_WIDTH > FONT_SIZE:
-        raise Exception("Font not well-kerned? Monospace?")
+    if KERNEL_WIDTH > 2 * FONT_SIZE:
+        raise Exception("Failed to find reasonable kernel size.")
 
     return min_s, max_s
 
