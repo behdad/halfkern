@@ -89,9 +89,6 @@ if __name__ == "__main__":
         if kern_value is None:
             continue
 
-        if abs(kern_value) <= kern.FONT_SIZE * tolerance:
-            continue
-
         kern_values[bigram] = kern_value
 
     for trigram in all_trigrams:
