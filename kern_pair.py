@@ -92,6 +92,15 @@ def create_surface_context(width, height):
     return ctx
 
 
+def create_pdf_surface_context(filename):
+    surface = cr.PDFSurface(filename, 0, 0)
+    ctx = cr.Context(surface)
+    if FONT_FACE is not None:
+        ctx.set_font_face(FONT_FACE)
+    ctx.set_font_size(FONT_SIZE)
+    return ctx
+
+
 @functools.cache
 def create_blurred_surface_for_text_cached(text):
     glyph = Glyph(text)
@@ -254,13 +263,13 @@ def showcase_pair(l, r, kern1, kern2):
 CONTEXTS = ("non", "HOH")
 
 
-def showcase_in_context(l, r, kern1, kern2):
-    measurement_ctx = create_surface_context(1, 1)
-    font_extents = measurement_ctx.font_extents()
+def showcase_in_context(ctx, l, r, kern1, kern2):
+    font_extents = ctx.font_extents()
     ascent = round(font_extents[0])
     descent = round(font_extents[1])
     height = ascent + descent
 
+    ctx.save()
     for op in ("MEASURE", "CUT"):
         width = 0
         lines = 0
@@ -272,10 +281,10 @@ def showcase_in_context(l, r, kern1, kern2):
                     # Measure
                     lines += 1
                     this_width = 0
-                    box = measurement_ctx.text_extents(textl)
+                    box = ctx.text_extents(textl)
                     this_width += box.x_advance
                     this_width += kern
-                    box = measurement_ctx.text_extents(textr)
+                    box = ctx.text_extents(textr)
                     this_width += box.x_advance
                     width = max(width, this_width)
                 else:
@@ -288,11 +297,12 @@ def showcase_in_context(l, r, kern1, kern2):
                     ctx.translate(0, height + BIAS)
 
         if op == "MEASURE":
-            ctx = create_surface_context(
+            ctx.get_target().set_size(
                 round(width) + 2 * BIAS, (height + BIAS) * lines + BIAS
             )
-            ctx.paint()
-            ctx.set_operator(cr.OPERATOR_DEST_OUT)
+        else:
+            ctx.show_page()
+    ctx.restore()
 
     return ctx.get_target()
 
@@ -448,6 +458,8 @@ if __name__ == "__main__":
 
     min_s, max_s = find_s(reduce=reduce, envelope=envelope)
 
+    pdf_ctx = create_pdf_surface_context("kerned.pdf")
+
     # Process individual pairs
 
     for text in texts:
@@ -471,10 +483,10 @@ if __name__ == "__main__":
             font_kern,
             "(%u units)" % round(font_kern_upem),
         )
-        print("Saving kern.png and kerned.png")
+        print("Saving kern.png")
         s = showcase_pair(l, r, kern, font_kern)
         s.write_to_png("kern.png")
-        s = showcase_in_context(text[0], text[1], kern, font_kern)
+        s = showcase_in_context(pdf_ctx, text[0], text[1], kern, font_kern)
         s.write_to_png("kerned.png")
 
     # Process dictionaries
@@ -517,5 +529,7 @@ if __name__ == "__main__":
 
         if abs(kern_value - font_kern) <= FONT_SIZE * tolerance:
             continue
+
+        showcase_in_context(pdf_ctx, *bigram, kern_value, font_kern)
 
         print(bigram, kern_value, font_kern)
