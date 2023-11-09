@@ -146,7 +146,7 @@ def overlap(l, r, kern=0):
     return ctx.get_target()
 
 
-def surface_sum(surface, func=max):
+def surface_sum(surface, func=sum):
     data = surface.get_data()
 
     if func is max:
@@ -364,7 +364,7 @@ if __name__ == "__main__":
         "--reduce",
         metavar="function",
         type=str,
-        help="Function to reduce overlaps: 'sum' or 'max'. Default: max.",
+        help="Function to reduce overlaps: 'sum' or 'max'. Default: sum.",
     )
     parser.add_argument(
         "-e",
@@ -382,7 +382,7 @@ if __name__ == "__main__":
         CONTEXTS = options.context
 
     import builtins
-    reduce = getattr(builtins, options.reduce or "max")
+    reduce = getattr(builtins, options.reduce or "sum")
     assert reduce in {max, sum}
     envelope = options.envelope or "sdf"
 

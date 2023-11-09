@@ -43,7 +43,7 @@ if __name__ == "__main__":
         "--reduce",
         metavar="function",
         type=str,
-        help="Function to reduce overlaps, eg. 'sum' or 'max'. Default: max.",
+        help="Function to reduce overlaps, eg. 'sum' or 'max'. Default: sum.",
     )
     parser.add_argument(
         "-t",
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     if cutoff >= 1:
         cutoff = cutoff / 100.0
     import builtins
-    reduce = getattr(builtins, options.reduce or "max")
+    reduce = getattr(builtins, options.reduce or "sum")
     assert reduce in {max, sum}
 
     ngrams.ENCODING = encoding
