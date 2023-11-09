@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     for trigram in all_trigrams:
         shift = (kern_values[trigram[:2]] - kern_values[trigram[1:]]) / 2
-        if shift == 0:
+        if abs(shift) < kern.FONT_SIZE * tolerance:
             continue
 
         print(trigram, shift)
