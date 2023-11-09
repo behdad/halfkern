@@ -367,32 +367,32 @@ if __name__ == "__main__":
         "python3 kern_pair.py",
         description="Autokern pairs of characters.",
     )
-    parser.add_argument("font", metavar="font.ttf", help="Font file.")
-    parser.add_argument("text", metavar="bigram", nargs="*", help="Pair to kern.")
+    parser.add_argument("font", metavar="font.ttf", help="Font file")
+    parser.add_argument("text", metavar="bigram", nargs="*", help="Pair to kern")
     parser.add_argument(
         "--context",
         metavar="context",
         action="append",
-        help="Context texts to show.",
+        help="Context texts to show",
     )
     parser.add_argument(
         "--reduce",
         metavar="function",
         type=str,
-        help="Function to reduce overlaps: 'sum' or 'max'. Default: sum.",
+        help="Function to reduce overlaps: 'sum' or 'max'. Default: sum",
     )
     parser.add_argument(
         "--envelope",
         metavar="type",
         type=str,
-        help="Envelope type: 'sdf' or 'gaussian'. Default: sdf.",
+        help="Envelope type: 'sdf' or 'gaussian'. Default: sdf",
     )
     parser.add_argument(
         "--dict",
         metavar="textfile",
         type=str,
         nargs="*",
-        help="Dictionary file to use for bigrams. Default: None.",
+        help="Dictionary file to use for bigrams. Default: None",
     )
     parser.add_argument(
         "-e",
@@ -409,7 +409,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--tolerance",
         type=float,
-        help="Tolerance for showing bigram kerning value. Default: 0.033.",
+        help="Tolerance for showing bigram kerning value. Default: 0.033",
     )
     parser.add_argument(
         "--cutoff",
