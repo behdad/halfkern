@@ -97,6 +97,19 @@ letters.  The three rows, similarly, show no-kerning, tool's suggestion,
 and existing kern.
 
 
+## Algorithms
+
+The tool has two different ways to form an envelope around each glyph.
+This can be set using `--envelope sdf` (default) or `--envelope guassian`.
+
+It also has two different ways to summarize the overlap of two glyph envelopes.
+This can be set using `--reduce sum` (default) or `--reduce max`.
+
+This gives four different combinations of modes to run the tool.  Which
+one works best for a project is subjective and should be experimented with.
+The defaults, in my opinion, generate the best results
+
+
 ## Dictionary
 
 To produce per-language dictionaries to be used with this tool you can use the
