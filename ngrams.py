@@ -51,7 +51,7 @@ def extract_ngrams(text, n, *, frequencies=None, cutoff=0.999, min_freq=MIN_FREQ
     return new_ngrams
 
 
-def extract_ngrams_from_file(filename, n, *, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"):
+def extract_ngrams_from_file(filename, *kargs, **kwargs):
     try:
         txtfile = open(filename, "rb")
         # Assume hunspell dictionary format; drop everything after "/"
@@ -64,7 +64,7 @@ def extract_ngrams_from_file(filename, n, *, cutoff=0.999, min_freq=MIN_FREQ, en
         txtfile = bz2.open(filename + ".txt.bz2")
         frqfile = bz2.open(filename + ".frq.bz2")
 
-    return extract_ngrams(txtfile, n, frequencies=frqfile, cutoff=cutoff, min_freq=min_freq, encoding=encoding)
+    return extract_ngrams(txtfile, *kargs, frequencies=frqfile, **kwargs)
 
 
 if __name__ == "__main__":
