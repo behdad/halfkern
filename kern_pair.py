@@ -102,11 +102,11 @@ def create_pdf_surface_context(filename):
 
 
 @functools.cache
-def create_blurred_surface_for_text_cached(text):
+def create_blurred_surface_for_text_cached(text, *, envelope="sdf"):
     glyph = Glyph(text)
     if surface_sum(glyph.surface) == 0:
         return None
-    glyph.surface = blur(glyph.surface)
+    glyph.surface = blur(glyph.surface, envelope=envelope)
     return glyph
 
 
@@ -514,8 +514,8 @@ if __name__ == "__main__":
         ):
             continue
 
-        l = create_blurred_surface_for_text_cached(bigram[0])
-        r = create_blurred_surface_for_text_cached(bigram[1])
+        l = create_blurred_surface_for_text_cached(bigram[0], envelope=envelope)
+        r = create_blurred_surface_for_text_cached(bigram[1], envelope=envelope)
 
         if l is None or r is None:
             continue
