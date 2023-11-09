@@ -13,6 +13,7 @@ def extract_ngrams(n, txtfile, *, frqfile=None, cutoff=0.999, min_freq=MIN_FREQ)
     ngrams = defaultdict(int)
 
     for word, freq in zip(txtfile, frqfile):
+        freq = int(freq)
         if freq < min_freq:
             continue
 
