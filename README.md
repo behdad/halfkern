@@ -123,3 +123,12 @@ or the
 
 For simple English wordlist on Linux and Mac platforms you can use
 `/usr/share/words/dict`.
+
+
+## Debugging
+
+To see the envelope for one character, use:
+```
+$ python3 kern_pair.py fontfile.ttf X
+```
+This will generate the envelope image for `X` and save it to `envelope.png`.
