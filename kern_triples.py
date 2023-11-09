@@ -27,7 +27,6 @@ if __name__ == "__main__":
     parser.add_argument("font", metavar="font.ttf", help="Font file.")
     parser.add_argument("dict", metavar="dict", nargs="+", help="Dictionary file.")
     parser.add_argument(
-        "-e",
         "--encoding",
         type=str,
         help="Text encoding. Default: utf-8",
@@ -39,10 +38,14 @@ if __name__ == "__main__":
         help="Only list trigrams of letters. Default: False",
     )
     parser.add_argument(
-        "-t",
         "--tolerance",
         type=float,
         help="Tolerance for kerning value. Default: 0.033.",
+    )
+    parser.add_argument(
+        "--cutoff",
+        type=float,
+        help="Bigram cutoff probability if dictionary is provided. Default: .999",
     )
 
     options = parser.parse_args(sys.argv[1:])
@@ -53,8 +56,10 @@ if __name__ == "__main__":
     tolerance = options.tolerance or 0.033
     if tolerance >= 1:
         tolerance = tolerance / kern.FONT_SIZE
+    cutoff = options.cutoff or 0.999
+    if cutoff >= 1:
+        cutoff = cutoff / 100.0
 
-    ngrams.ENCODING = encoding
     ngrams.LETTERS_ONLY = options.letters_only
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
     kern.HB_FONT = kern.create_hb_font(fontfile)
@@ -64,10 +69,10 @@ if __name__ == "__main__":
     all_bigrams = defaultdict(int)
     all_trigrams = defaultdict(int)
     for dictfile in dictfiles:
-        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile)
+        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile, cutoff=cutoff, encoding=encoding)
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
-        this_trigrams = ngrams.extract_ngrams_from_file(3, dictfile)
+        this_trigrams = ngrams.extract_ngrams_from_file(3, dictfile, cutoff=cutoff, encoding=encoding)
         for k, v in this_trigrams.items():
             all_trigrams[k] += v
 

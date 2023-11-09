@@ -405,7 +405,6 @@ if __name__ == "__main__":
         help="Dictionary file to use for bigrams. Default: None",
     )
     parser.add_argument(
-        "-e",
         "--encoding",
         type=str,
         help="Dictionary text encoding. Default: utf-8",
@@ -499,12 +498,11 @@ if __name__ == "__main__":
     if cutoff >= 1:
         cutoff = cutoff / 100.0
 
-    ngrams.ENCODING = encoding
     ngrams.LETTERS_ONLY = options.letters_only
 
     all_bigrams = defaultdict(int)
     for dictfile in options.dict or []:
-        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile, cutoff=cutoff)
+        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile, cutoff=cutoff, encoding=encoding)
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
     for bigram in all_bigrams:
