@@ -1,9 +1,13 @@
+import ngrams
 import cairo as cr
 import cairoft
 import uharfbuzz as hb
 import numpy as np
 from scipy import signal
 import math
+import functools
+import unicodedata
+from collections import defaultdict
 
 
 def gaussian(x, a, b, c):
@@ -24,7 +28,7 @@ HB_FONT = None
 
 FONT_SIZE = 100
 
-KERNEL_WIDTH = round(.2 * FONT_SIZE)
+KERNEL_WIDTH = round(0.2 * FONT_SIZE)
 if KERNEL_WIDTH % 2 == 0:
     KERNEL_WIDTH += 1
 KERNEL = kernel(KERNEL_WIDTH)
@@ -47,6 +51,7 @@ def blur(surface, *, envelope="sdf", kernel=None):
 
     if envelope == "sdf":
         import skfmm
+
         image = 255 - (255 / BIAS) * skfmm.distance(255 - image)
         image = np.maximum(image, np.zeros(image.shape))
     elif envelope == "gaussian":
@@ -66,7 +71,7 @@ def blur(surface, *, envelope="sdf", kernel=None):
     ctx = cr.Context(blurred)
 
     if envelope == "sdf":
-        ctx.set_source_rgba(0, 0, 0, .5)
+        ctx.set_source_rgba(0, 0, 0, 0.5)
         ctx.set_operator(cr.OPERATOR_DEST_OUT)
         ctx.paint()
 
@@ -85,6 +90,15 @@ def create_surface_context(width, height):
         ctx.set_font_face(FONT_FACE)
     ctx.set_font_size(FONT_SIZE)
     return ctx
+
+
+@functools.cache
+def create_blurred_surface_for_text_cached(text):
+    glyph = Glyph(text)
+    if surface_sum(glyph.surface) == 0:
+        return None
+    glyph.surface = blur(glyph.surface)
+    return glyph
 
 
 class Glyph:
@@ -168,7 +182,9 @@ def surface_sum(surface, func=sum):
     return s
 
 
-def kern_pair(l, r, min_overlap, max_overlap, *, reduce=max, envelope="sdf", blurred=False):
+def kern_pair(
+    l, r, min_overlap, max_overlap, *, reduce=max, envelope="sdf", blurred=False
+):
     old_l_surface = l.surface
     old_r_surface = r.surface
     if not blurred:
@@ -204,7 +220,7 @@ def kern_pair(l, r, min_overlap, max_overlap, *, reduce=max, envelope="sdf", blu
     return kern // 2 if kern < 0 else kern, s
 
 
-def showcase(l, r, kern1, kern2):
+def showcase_pair(l, r, kern1, kern2):
     height = l.get_height()
 
     ctx = create_surface_context(
@@ -341,6 +357,7 @@ def find_s(*, reduce=max, envelope="sdf"):
 
     return min_s, max_s
 
+
 if __name__ == "__main__":
     import sys
 
@@ -348,40 +365,67 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         "python3 kern_pair.py",
-        description="Autokern a pair of characters.",
+        description="Autokern pairs of characters.",
     )
     parser.add_argument("font", metavar="font.ttf", help="Font file.")
-    parser.add_argument("text", metavar="text", help="Pair to kern.")
+    parser.add_argument("text", metavar="bigram", nargs="*", help="Pair to kern.")
     parser.add_argument(
-        "-c",
         "--context",
         metavar="context",
         action="append",
         help="Context texts to show.",
     )
     parser.add_argument(
-        "-r",
         "--reduce",
         metavar="function",
         type=str,
         help="Function to reduce overlaps: 'sum' or 'max'. Default: sum.",
     )
     parser.add_argument(
-        "-e",
         "--envelope",
         metavar="type",
         type=str,
         help="Envelope type: 'sdf' or 'gaussian'. Default: sdf.",
     )
+    parser.add_argument(
+        "--dict",
+        metavar="type",
+        type=str,
+        nargs="*",
+        help="Dictionary file to use for bigrams. Default: None.",
+    )
+    parser.add_argument(
+        "-e",
+        "--encoding",
+        type=str,
+        help="Dictionary text encoding. Default: utf-8",
+    )
+    parser.add_argument(
+        "-l",
+        "--letters-only",
+        action="store_true",
+        help="Only list bigrams of letters. Default: False",
+    )
+    parser.add_argument(
+        "--tolerance",
+        type=float,
+        help="Tolerance for showing bigram kerning value. Default: 0.033.",
+    )
+    parser.add_argument(
+        "--cutoff",
+        type=float,
+        help="Bigram cutoff probability if dictionary is provided. Default: .999",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
     font = options.font
-    text = options.text
+    texts = options.text
     if options.context:
         CONTEXTS = options.context
 
     import builtins
+
     reduce = getattr(builtins, options.reduce or "sum")
     assert reduce in {max, sum}
     envelope = options.envelope or "sdf"
@@ -389,39 +433,85 @@ if __name__ == "__main__":
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     HB_FONT = create_hb_font(font)
 
-    if len(text) == 1:
+    if len(texts) == 1 and len(texts[0]) == 1:
         _, _ = find_s(reduce=reduce, envelope=envelope)
-        glyph = Glyph(text)
+        glyph = Glyph(texts[0])
         glyph.surface = blur(glyph.surface, envelope=envelope)
         glyph.surface.write_to_png("kern.png")
         sys.exit(0)
 
-    assert len(text) == 2
+    assert all(len(text) == 2 for text in texts)
 
     min_s, max_s = find_s(reduce=reduce, envelope=envelope)
 
-    l = Glyph(text[0])
-    r = Glyph(text[1])
+    # Process individual pairs
 
-    kern, s = kern_pair(l, r, min_s, max_s, reduce=reduce, envelope=envelope)
-    if kern is None:
-        print("Couldn't autokern")
-        kern = 0
-    font_kern = actual_kern(text[0], text[1])
-    font_kern_upem = actual_kern(text[0], text[1], scaled=False)
+    for text in texts:
+        l = Glyph(text[0])
+        r = Glyph(text[1])
 
-    upem = HB_FONT.face.upem
-    print(
-        text,
-        "autokern:",
-        kern,
-        "(%u units)" % round(kern / FONT_SIZE * upem),
-        "existing kern:",
-        font_kern,
-        "(%u units)" % round(font_kern_upem),
-    )
-    print("Saving kern.png and kerned.png")
-    s = showcase(l, r, kern, font_kern)
-    s.write_to_png("kern.png")
-    s = showcase_in_context(text[0], text[1], kern, font_kern)
-    s.write_to_png("kerned.png")
+        kern, s = kern_pair(l, r, min_s, max_s, reduce=reduce, envelope=envelope)
+        if kern is None:
+            print("Couldn't autokern")
+            kern = 0
+        font_kern = actual_kern(text[0], text[1])
+        font_kern_upem = actual_kern(text[0], text[1], scaled=False)
+
+        upem = HB_FONT.face.upem
+        print(
+            text,
+            "autokern:",
+            kern,
+            "(%u units)" % round(kern / FONT_SIZE * upem),
+            "existing kern:",
+            font_kern,
+            "(%u units)" % round(font_kern_upem),
+        )
+        print("Saving kern.png and kerned.png")
+        s = showcase_pair(l, r, kern, font_kern)
+        s.write_to_png("kern.png")
+        s = showcase_in_context(text[0], text[1], kern, font_kern)
+        s.write_to_png("kerned.png")
+
+    # Process dictionaries
+
+    encoding = options.encoding or "utf-8"
+    tolerance = options.tolerance or 0.033
+    if tolerance >= 1:
+        tolerance = tolerance / kern.FONT_SIZE
+    cutoff = options.cutoff or 0.999
+    if cutoff >= 1:
+        cutoff = cutoff / 100.0
+
+    ngrams.ENCODING = encoding
+    ngrams.LETTERS_ONLY = options.letters_only
+
+    all_bigrams = defaultdict(int)
+    for dictfile in options.dict or []:
+        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile, cutoff=cutoff)
+        for k, v in this_bigrams.items():
+            all_bigrams[k] += v
+    for bigram in all_bigrams:
+        if (
+            unicodedata.category(bigram[0]) == "Mn"
+            or unicodedata.category(bigram[1]) == "Mn"
+        ):
+            continue
+
+        l = create_blurred_surface_for_text_cached(bigram[0])
+        r = create_blurred_surface_for_text_cached(bigram[1])
+
+        if l is None or r is None:
+            continue
+
+        kern_value, _ = kern_pair(l, r, min_s, max_s, blurred=True, reduce=reduce)
+        if kern_value is None:
+            continue
+        font_kern = actual_kern(bigram[0], bigram[1])
+        if kern_value == 0 and font_kern == 0:
+            continue
+
+        if abs(kern_value - font_kern) <= FONT_SIZE * tolerance:
+            continue
+
+        print(bigram, kern_value, font_kern)
