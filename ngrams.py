@@ -29,11 +29,14 @@ def extract_ngrams(n, txtfile, *, frqfile=None, cutoff=0.999, min_freq=MIN_FREQ)
         words = [word[i:] for i in range(n)]
 
         for ngram in zip(*words):
-            if LETTERS_ONLY and any(not c.isalpha() for c in ngram):
-                continue
 
             ngram = "".join(ngram)
             ngrams[ngram] += freq
+
+    if LETTERS_ONLY:
+        for ngram in list(ngrams.keys()):
+            if any(not c.isalpha() for c in ngram):
+                del ngrams[ngram]
 
     ngrams = dict(sorted(((k, v) for k, v in ngrams.items()), key=lambda kv: -kv[1]))
     total = sum(ngrams.values())
