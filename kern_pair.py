@@ -502,7 +502,7 @@ if __name__ == "__main__":
 
     all_bigrams = defaultdict(int)
     for dictfile in options.dict or []:
-        this_bigrams = ngrams.extract_ngrams_from_file(2, dictfile, cutoff=cutoff, encoding=encoding)
+        this_bigrams = ngrams.extract_ngrams_from_file(dictfile, 2, cutoff=cutoff, encoding=encoding)
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
     for bigram in all_bigrams:

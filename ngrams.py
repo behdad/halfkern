@@ -5,13 +5,13 @@ MIN_FREQ = 10
 LETTERS_ONLY = False
 
 
-def extract_ngrams(n, txtfile, *, frqfile=None, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"):
-    if frqfile is None:
-        frqfile = itertools.cycle([min_freq])
+def extract_ngrams(text, n, *, frequencies=None, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"):
+    if frequencies is None:
+        frequencies = itertools.cycle([min_freq])
 
     ngrams = defaultdict(int)
 
-    for word, freq in zip(txtfile, frqfile):
+    for word, freq in zip(text, frequencies):
         freq = int(freq)
         if freq < min_freq:
             continue
@@ -51,7 +51,7 @@ def extract_ngrams(n, txtfile, *, frqfile=None, cutoff=0.999, min_freq=MIN_FREQ,
     return new_ngrams
 
 
-def extract_ngrams_from_file(n, filename, *, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"):
+def extract_ngrams_from_file(filename, n, *, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"):
     try:
         txtfile = open(filename, "rb")
         # Assume hunspell dictionary format; drop everything after "/"
@@ -64,7 +64,7 @@ def extract_ngrams_from_file(n, filename, *, cutoff=0.999, min_freq=MIN_FREQ, en
         txtfile = bz2.open(filename + ".txt.bz2")
         frqfile = bz2.open(filename + ".frq.bz2")
 
-    return extract_ngrams(n, txtfile, frqfile=frqfile, cutoff=cutoff, min_freq=min_freq, encoding=encoding)
+    return extract_ngrams(txtfile, n, frequencies=frqfile, cutoff=cutoff, min_freq=min_freq, encoding=encoding)
 
 
 if __name__ == "__main__":
