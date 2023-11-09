@@ -102,4 +102,11 @@ and existing kern.
 To produce per-language dictionaries to be used with this tool you can use the
 [aosp-test-texts](https://github.com/googlefonts/aosp-test-texts)
 repository, or the
-[libreoffice spellcheck dictionaries](https://cgit.freedesktop.org/libreoffice/dictionaries/).
+[libreoffice spellcheck dictionaries](https://cgit.freedesktop.org/libreoffice/dictionaries/),
+or the
+[harfbuzz-wikipedia-testing](https://github.com/harfbuzz/harfbuzz-testing-wikipedia).
+
+*TODO:* Expand on how to use these.
+
+For simple English wordlist on Linux and Mac platforms you can use
+`/usr/share/words/dict`.
