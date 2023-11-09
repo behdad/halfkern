@@ -389,7 +389,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dict",
-        metavar="type",
+        metavar="textfile",
         type=str,
         nargs="*",
         help="Dictionary file to use for bigrams. Default: None.",
@@ -437,7 +437,7 @@ if __name__ == "__main__":
         _, _ = find_s(reduce=reduce, envelope=envelope)
         glyph = Glyph(texts[0])
         glyph.surface = blur(glyph.surface, envelope=envelope)
-        glyph.surface.write_to_png("kern.png")
+        glyph.surface.write_to_png("envelope.png")
         sys.exit(0)
 
     assert all(len(text) == 2 for text in texts)
