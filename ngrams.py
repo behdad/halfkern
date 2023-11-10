@@ -6,7 +6,14 @@ LETTERS_ONLY = False
 
 
 def extract_ngrams(
-    text, n, *, frequencies=None, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"
+    text,
+    n,
+    *,
+    frequencies=None,
+    cutoff=0.999,
+    min_freq=MIN_FREQ,
+    encoding="utf-8",
+    letters_only=False
 ):
     if frequencies is None:
         frequencies = itertools.cycle([min_freq])
@@ -33,7 +40,7 @@ def extract_ngrams(
             ngram = "".join(ngram)
             ngrams[ngram] += freq
 
-    if LETTERS_ONLY:
+    if letters_only:
         for ngram in list(ngrams.keys()):
             if any(not c.isalpha() for c in ngram):
                 del ngrams[ngram]
@@ -128,9 +135,13 @@ if __name__ == "__main__":
     ngram = options.ngram or 2
     cutoff = options.cutoff or 0.999
 
-    LETTERS_ONLY = options.letters_only
-
-    ngrams = extract_ngrams_from_file(ngram, dictfile, cutoff=cutoff, encoding=encoding)
+    ngrams = extract_ngrams_from_file(
+        ngram,
+        dictfile,
+        cutoff=cutoff,
+        encoding=encoding,
+        letters_only=options.letters_only,
+    )
 
     for ngram, freq in ngrams.items():
         print(ngram, freq)

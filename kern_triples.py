@@ -60,7 +60,6 @@ if __name__ == "__main__":
     if cutoff > 1:
         cutoff = cutoff / 100.0
 
-    ngrams.LETTERS_ONLY = options.letters_only
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
     kern.HB_FONT = kern.create_hb_font(fontfile)
 
@@ -70,12 +69,20 @@ if __name__ == "__main__":
     all_trigrams = defaultdict(int)
     for dictfile in dictfiles:
         this_bigrams = ngrams.extract_ngrams_from_file(
-            dictfile, 2, cutoff=cutoff, encoding=encoding
+            dictfile,
+            2,
+            cutoff=cutoff,
+            encoding=encoding,
+            letters_only=options.letters_only,
         )
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
         this_trigrams = ngrams.extract_ngrams_from_file(
-            dictfile, 3, cutoff=cutoff, encoding=encoding
+            dictfile,
+            3,
+            cutoff=cutoff,
+            encoding=encoding,
+            letters_only=options.letters_only,
         )
         for k, v in this_trigrams.items():
             all_trigrams[k] += v

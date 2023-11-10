@@ -506,12 +506,14 @@ if __name__ == "__main__":
     if cutoff > 1:
         cutoff = cutoff / 100.0
 
-    ngrams.LETTERS_ONLY = options.letters_only
-
     all_bigrams = defaultdict(int)
     for dictfile in options.dict or []:
         this_bigrams = ngrams.extract_ngrams_from_file(
-            dictfile, 2, cutoff=cutoff, encoding=encoding
+            dictfile,
+            2,
+            cutoff=cutoff,
+            encoding=encoding,
+            letters_only=options.letters_only,
         )
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
