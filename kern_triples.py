@@ -69,10 +69,14 @@ if __name__ == "__main__":
     all_bigrams = defaultdict(int)
     all_trigrams = defaultdict(int)
     for dictfile in dictfiles:
-        this_bigrams = ngrams.extract_ngrams_from_file(dictfile, 2, cutoff=cutoff, encoding=encoding)
+        this_bigrams = ngrams.extract_ngrams_from_file(
+            dictfile, 2, cutoff=cutoff, encoding=encoding
+        )
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
-        this_trigrams = ngrams.extract_ngrams_from_file(dictfile, 3, cutoff=cutoff, encoding=encoding)
+        this_trigrams = ngrams.extract_ngrams_from_file(
+            dictfile, 3, cutoff=cutoff, encoding=encoding
+        )
         for k, v in this_trigrams.items():
             all_trigrams[k] += v
 

@@ -5,7 +5,9 @@ MIN_FREQ = 10
 LETTERS_ONLY = False
 
 
-def extract_ngrams(text, n, *, frequencies=None, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"):
+def extract_ngrams(
+    text, n, *, frequencies=None, cutoff=0.999, min_freq=MIN_FREQ, encoding="utf-8"
+):
     if frequencies is None:
         frequencies = itertools.cycle([min_freq])
 
@@ -28,7 +30,6 @@ def extract_ngrams(text, n, *, frequencies=None, cutoff=0.999, min_freq=MIN_FREQ
         words = [word[i:] for i in range(n)]
 
         for ngram in zip(*words):
-
             ngram = "".join(ngram)
             ngrams[ngram] += freq
 
@@ -52,17 +53,34 @@ def extract_ngrams(text, n, *, frequencies=None, cutoff=0.999, min_freq=MIN_FREQ
 
 
 def extract_ngrams_from_file(filename, *kargs, **kwargs):
+    frqfile = None
     try:
         txtfile = open(filename, "rb")
-        # Assume hunspell dictionary format; drop everything after "/"
-        txtfile = (s if s.find(b"/") == -1 else s[: s.find(b"/")] for s in txtfile)
-        frqfile = None
     except FileNotFoundError:
-        import bz2
+        try:
+            import bz2
 
-        # Assume harfbuzz-testing-wikipedia format
-        txtfile = bz2.open(filename + ".txt.bz2").read().splitlines()
-        frqfile = bz2.open(filename + ".frq.bz2").read().splitlines()
+            # Assume harfbuzz-testing-wikipedia format
+            txtfile = bz2.open(filename + ".txt.bz2").read().splitlines()
+            frqfile = bz2.open(filename + ".frq.bz2").read().splitlines()
+        except FileNotFoundError:
+            try:
+                # Assume hunspell dictionary format;
+                afffile = open(filename + ".aff", "rb")
+                for line in afffile:
+                    if line.startswith(b"SET"):
+                        kwargs["encoding"] = (
+                            line.replace(b"\t", b" ").split()[1].decode("ascii")
+                        )
+                        break
+                txtfile = open(filename + ".dic", "rb")
+                next(txtfile)  # Skip over the num entries line
+                txtfile = (
+                    s if s.find(b"/") == -1 else s[: s.find(b"/")] for s in txtfile
+                )
+
+            except FileNotFoundError:
+                raise FileNotFoundError("File not found: %s" % filename)
 
     return extract_ngrams(txtfile, *kargs, frequencies=frqfile, **kwargs)
 

@@ -192,7 +192,15 @@ def surface_sum(surface, func=sum):
 
 
 def kern_pair(
-    l, r, min_overlap, max_overlap, *, reduce=max, envelope="sdf", blurred=False, half=True
+    l,
+    r,
+    min_overlap,
+    max_overlap,
+    *,
+    reduce=max,
+    envelope="sdf",
+    blurred=False,
+    half=True
 ):
     old_l_surface = l.surface
     old_r_surface = r.surface
@@ -502,7 +510,9 @@ if __name__ == "__main__":
 
     all_bigrams = defaultdict(int)
     for dictfile in options.dict or []:
-        this_bigrams = ngrams.extract_ngrams_from_file(dictfile, 2, cutoff=cutoff, encoding=encoding)
+        this_bigrams = ngrams.extract_ngrams_from_file(
+            dictfile, 2, cutoff=cutoff, encoding=encoding
+        )
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
     for bigram in all_bigrams:
