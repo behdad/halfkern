@@ -61,8 +61,8 @@ def extract_ngrams_from_file(filename, *kargs, **kwargs):
         import bz2
 
         # Assume harfbuzz-testing-wikipedia format
-        txtfile = bz2.open(filename + ".txt.bz2")
-        frqfile = bz2.open(filename + ".frq.bz2")
+        txtfile = bz2.open(filename + ".txt.bz2").read().splitlines()
+        frqfile = bz2.open(filename + ".frq.bz2").read().splitlines()
 
     return extract_ngrams(txtfile, *kargs, frequencies=frqfile, **kwargs)
 
