@@ -57,7 +57,7 @@ if __name__ == "__main__":
     if tolerance >= 1:
         tolerance = tolerance / kern.FONT_SIZE
     cutoff = options.cutoff or 0.999
-    if cutoff >= 1:
+    if cutoff > 1:
         cutoff = cutoff / 100.0
 
     ngrams.LETTERS_ONLY = options.letters_only
