@@ -73,14 +73,19 @@ def extract_ngrams_from_file(filename, *kargs, **kwargs):
         except FileNotFoundError:
             try:
                 # Assume hunspell dictionary format;
-                afffile = open(filename + ".aff", "rb")
+                filename2 = filename
+                if filename.endswith(".aff"):
+                    filename2 = filename[:-4]
+                elif filename.endswith(".dic"):
+                    filename2 = filename[:-4]
+                afffile = open(filename2 + ".aff", "rb")
                 for line in afffile:
                     if line.startswith(b"SET"):
                         kwargs["encoding"] = (
                             line.replace(b"\t", b" ").split()[1].decode("ascii")
                         )
                         break
-                txtfile = open(filename + ".dic", "rb")
+                txtfile = open(filename2 + ".dic", "rb")
                 next(txtfile)  # Skip over the num entries line
                 txtfile = (
                     s if s.find(b"/") == -1 else s[: s.find(b"/")] for s in txtfile
