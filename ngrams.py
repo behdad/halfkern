@@ -31,14 +31,8 @@ def extract_ngrams(
             continue
         freq = int(freq)
 
-        if len(word) < n:
-            continue
-
-        words = [word[i:] for i in range(n)]
-
-        for ngram in zip(*words):
-            ngram = "".join(ngram)
-            ngrams[ngram] += freq
+        for i in range(len(word) - n + 1):
+            ngrams[word[i : i + n]] += freq
 
     if letters_only:
         for ngram in list(ngrams.keys()):
