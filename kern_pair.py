@@ -3,7 +3,6 @@ import cairo as cr
 import cairoft
 import uharfbuzz as hb
 import numpy as np
-from scipy import signal
 import math
 import functools
 import unicodedata
@@ -51,10 +50,10 @@ def blur(surface, *, envelope="sdf", kernel=None):
 
     if envelope == "sdf":
         import skfmm
-
         image = 255 - (255 / BIAS) * skfmm.distance(255 - image)
         image = np.maximum(image, np.zeros(image.shape))
     elif envelope == "gaussian":
+        from scipy import signal
         image = signal.convolve(image, kernel, mode="same")
         image = image.transpose()
         image = signal.convolve(image, kernel, mode="same")
