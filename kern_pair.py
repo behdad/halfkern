@@ -26,6 +26,7 @@ FONT_FACE = None
 HB_FONT = None
 
 FONT_SIZE = 100
+PDF_FONT_SIZE = 18
 
 KERNEL_WIDTH = round(0.2 * FONT_SIZE)
 if KERNEL_WIDTH % 2 == 0:
@@ -50,10 +51,12 @@ def blur(surface, *, envelope="sdf", kernel=None):
 
     if envelope == "sdf":
         import skfmm
+
         image = 255 - (255 / BIAS) * skfmm.distance(255 - image)
         image = np.maximum(image, np.zeros(image.shape))
     elif envelope == "gaussian":
         from scipy import signal
+
         image = signal.convolve(image, kernel, mode="same")
         image = image.transpose()
         image = signal.convolve(image, kernel, mode="same")
@@ -97,6 +100,8 @@ def create_pdf_surface_context(filename):
     if FONT_FACE is not None:
         ctx.set_font_face(FONT_FACE)
     ctx.set_font_size(FONT_SIZE)
+    scale = PDF_FONT_SIZE / FONT_SIZE
+    ctx.scale(scale, scale)
     return ctx
 
 
@@ -304,8 +309,10 @@ def showcase_in_context(ctx, l, r, kern1, kern2):
                     ctx.translate(0, height + BIAS)
 
         if op == "MEASURE":
+            scale = PDF_FONT_SIZE / FONT_SIZE
             ctx.get_target().set_size(
-                round(width) + 2 * BIAS, (height + BIAS) * lines + BIAS
+                (round(width) + 2 * BIAS) * scale,
+                ((height + BIAS) * lines + BIAS) * scale,
             )
         else:
             ctx.show_page()
@@ -393,6 +400,12 @@ if __name__ == "__main__":
         help="Context texts to show",
     )
     parser.add_argument(
+        "--font-size",
+        metavar="size",
+        type=float,
+        help="Set the font size used in PDF output. Default: %s" % PDF_FONT_SIZE,
+    )
+    parser.add_argument(
         "--reduce",
         metavar="function",
         type=str,
@@ -443,6 +456,8 @@ if __name__ == "__main__":
     texts = options.text
     if options.context:
         CONTEXTS = options.context
+    if options.font_size:
+        PDF_FONT_SIZE = options.font_size
 
     import builtins
 
