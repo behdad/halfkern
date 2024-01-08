@@ -99,7 +99,7 @@ if __name__ == "__main__":
         "python3 ngrams.py",
         description="Find ngrams from a language dictionary.",
     )
-    parser.add_argument("dict", metavar="dict", help="Dictionary file.")
+    parser.add_argument("dict", metavar="dict", nargs="+", help="Dictionary file.")
     parser.add_argument(
         "-n",
         "--ngram",
@@ -127,18 +127,22 @@ if __name__ == "__main__":
 
     options = parser.parse_args(sys.argv[1:])
 
-    dictfile = options.dict
+    dictfiles = options.dict
     encoding = options.encoding or "utf-8"
     ngram = options.ngram or 2
     cutoff = options.cutoff or 0.999
 
-    ngrams = extract_ngrams_from_file(
-        dictfile,
-        ngram,
-        cutoff=cutoff,
-        encoding=encoding,
-        letters_only=options.letters_only,
-    )
+    all_ngrams = defaultdict(float)
+    for dictfile in dictfiles:
+        ngrams = extract_ngrams_from_file(
+            dictfile,
+            ngram,
+            cutoff=cutoff,
+            encoding=encoding,
+            letters_only=options.letters_only,
+        )
+        for k, v in ngrams.items():
+            all_ngrams[k] += v
 
-    for ngram, freq in ngrams.items():
+    for ngram, freq in all_ngrams.items():
         print(ngram, freq)
