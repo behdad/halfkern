@@ -93,8 +93,6 @@ def extract_ngrams_from_file(filename, *kargs, **kwargs):
 
 if __name__ == "__main__":
     import sys
-
-    lang = sys.argv[1]
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -135,8 +133,8 @@ if __name__ == "__main__":
     cutoff = options.cutoff or 0.999
 
     ngrams = extract_ngrams_from_file(
-        ngram,
         dictfile,
+        ngram,
         cutoff=cutoff,
         encoding=encoding,
         letters_only=options.letters_only,
