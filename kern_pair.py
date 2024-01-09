@@ -6,8 +6,11 @@ import numpy as np
 import math
 import functools
 import unicodedata
+import re
+import csv
 from collections import defaultdict
 
+NUMBER_LIKE = re.compile(r"([-\.\d]\d)|(\d\.)")
 
 def gaussian(x, a, b, c):
     return a * math.exp(-((x - b) ** 2) / (2 * c**2))
@@ -381,6 +384,12 @@ def find_s(*, reduce=max, envelope="sdf"):
 
     return min_s, max_s
 
+def escape_bigram(bigram: str) -> str:
+    assert len(bigram) == 2
+    # Google Sheets / Excel escape formula or number literal
+    if bigram.startswith("=") or NUMBER_LIKE.fullmatch(bigram):
+        return f"'{bigram}"
+    return bigram
 
 if __name__ == "__main__":
     import sys
@@ -531,6 +540,9 @@ if __name__ == "__main__":
         )
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
+    
+    writer = csv.writer(sys.stdout)
+    writer.writerow(("bigram", "suggested", "actual"))
     for bigram in all_bigrams:
         if (
             unicodedata.category(bigram[0]) == "Mn"
@@ -556,4 +568,4 @@ if __name__ == "__main__":
 
         showcase_in_context(pdf_ctx, *bigram, kern_value, font_kern)
 
-        print(bigram, kern_value, font_kern)
+        writer.writerow((escape_bigram(bigram), kern_value, font_kern))
