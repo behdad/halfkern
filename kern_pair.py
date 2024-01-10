@@ -454,6 +454,11 @@ if __name__ == "__main__":
         type=float,
         help="Bigram cutoff probability if dictionary is provided. Default: .999",
     )
+    parser.add_argument(
+        "--pdf",
+        type=str,
+        help="Output PDF file. Default: kerned.pdf",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
@@ -488,7 +493,7 @@ if __name__ == "__main__":
 
     min_s, max_s = find_s(reduce=reduce, envelope=envelope)
 
-    pdf_ctx = create_pdf_surface_context("kerned.pdf")
+    pdf_ctx = create_pdf_surface_context(options.pdf or "kerned.pdf")
 
     # Process individual pairs
 
