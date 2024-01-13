@@ -26,6 +26,7 @@ def kernel(width):
 
 
 FONT_FACE = None
+FONT_OPTIONS = None
 HB_FONT = None
 
 FONT_SIZE = 100
@@ -91,6 +92,8 @@ def create_surface_context(width, height):
     surface = cr.ImageSurface(cr.FORMAT_A8, width, height)
     ctx = cr.Context(surface)
     ctx.set_source_rgb(1, 1, 1)
+    if FONT_OPTIONS is not None:
+        ctx.set_font_options(FONT_OPTIONS)
     if FONT_FACE is not None:
         ctx.set_font_face(FONT_FACE)
     ctx.set_font_size(FONT_SIZE)
@@ -100,6 +103,8 @@ def create_surface_context(width, height):
 def create_pdf_surface_context(filename):
     surface = cr.PDFSurface(filename, 0, 0)
     ctx = cr.Context(surface)
+    if FONT_OPTIONS is not None:
+        ctx.set_font_options(FONT_OPTIONS)
     if FONT_FACE is not None:
         ctx.set_font_face(FONT_FACE)
     ctx.set_font_size(FONT_SIZE)
@@ -324,10 +329,14 @@ def showcase_in_context(ctx, l, r, kern1, kern2):
     return ctx.get_target()
 
 
-def create_hb_font(fontfile):
+def create_hb_font(fontfile, variations=None):
     blob = hb.Blob.from_file_path(fontfile)
     face = hb.Face(blob, 0)
     font = hb.Font(face)
+    if variations is not None:
+        # Convert from tag=value space-separated list to dict
+        variations = dict((v.split("=")[0], float(v.split("=")[1])) for v in variations.split(','))
+        font.set_variations(variations)
     return font
 
 
@@ -455,6 +464,11 @@ if __name__ == "__main__":
         help="Bigram cutoff probability if dictionary is provided. Default: .999",
     )
     parser.add_argument(
+        "--variations",
+        type=str,
+        help="Font variations to use. Default: None",
+    )
+    parser.add_argument(
         "--pdf",
         type=str,
         help="Output PDF file. Default: kerned.pdf",
@@ -472,6 +486,9 @@ if __name__ == "__main__":
         CONTEXTS = options.context
     if options.font_size:
         PDF_FONT_SIZE = options.font_size
+    if options.variations:
+        FONT_OPTIONS = cr.FontOptions()
+        FONT_OPTIONS.set_variations(options.variations)
 
     import builtins
 
@@ -480,7 +497,7 @@ if __name__ == "__main__":
     envelope = options.envelope or "sdf"
 
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
-    HB_FONT = create_hb_font(font)
+    HB_FONT = create_hb_font(font, options.variations)
 
     if len(texts) == 1 and len(texts[0]) == 1:
         _, _ = find_s(reduce=reduce, envelope=envelope)
