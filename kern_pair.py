@@ -480,6 +480,11 @@ if __name__ == "__main__":
         type=str,
         help="Output PDF file. Default: kerned.pdf",
     )
+    parser.add_argument(
+        "--exclude",
+        type=str,
+        help="Exclude bigrams containing these characters. Default: None",
+    )
 
     options = parser.parse_args(sys.argv[1:])
 
@@ -578,6 +583,9 @@ if __name__ == "__main__":
             unicodedata.category(bigram[0]) == "Mn"
             or unicodedata.category(bigram[1]) == "Mn"
         ):
+            continue
+
+        if options.exclude and any(c in bigram for c in options.exclude):
             continue
 
         l = create_blurred_surface_for_text_cached(bigram[0], envelope=envelope)
