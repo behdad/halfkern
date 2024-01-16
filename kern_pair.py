@@ -469,6 +469,13 @@ if __name__ == "__main__":
         help="Font variations to use. Default: None",
     )
     parser.add_argument(
+        "-u",
+        "--upem",
+        default=False,
+        action="store_true",
+        help="Output values in UPEM units. Default: False",
+    )
+    parser.add_argument(
         "--pdf",
         type=str,
         help="Output PDF file. Default: kerned.pdf",
@@ -512,6 +519,8 @@ if __name__ == "__main__":
 
     pdf_ctx = create_pdf_surface_context(options.pdf or "kerned.pdf")
 
+    upem = HB_FONT.face.upem
+
     # Process individual pairs
 
     for text in texts:
@@ -525,7 +534,6 @@ if __name__ == "__main__":
         font_kern = actual_kern(text[0], text[1])
         font_kern_upem = actual_kern(text[0], text[1], scaled=False)
 
-        upem = HB_FONT.face.upem
         print(
             text,
             "autokern:",
@@ -562,7 +570,7 @@ if __name__ == "__main__":
         )
         for k, v in this_bigrams.items():
             all_bigrams[k] += v
-    
+
     writer = csv.writer(sys.stdout)
     writer.writerow(("bigram", "suggested", "actual"))
     for bigram in all_bigrams:
@@ -589,5 +597,9 @@ if __name__ == "__main__":
             continue
 
         showcase_in_context(pdf_ctx, *bigram, kern_value, font_kern)
+
+        if options.upem:
+            kern_value = round(kern_value / FONT_SIZE * upem)
+            font_kern = actual_kern(bigram[0], bigram[1], scaled=False)
 
         writer.writerow((escape_bigram(bigram), kern_value, font_kern))
