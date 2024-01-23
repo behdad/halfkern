@@ -65,7 +65,7 @@ and existing kern.
 ## Algorithms
 
 The tool has two different ways to form an envelope around each glyph.
-This can be set using `--envelope sdf` (default) or `--envelope guassian`.
+This can be set using `--envelope sdf` (default) or `--envelope gaussian`.
 
 It also has two different ways to summarize the overlap of two glyph envelopes.
 This can be set using `--reduce sum` (default) or `--reduce max`.
