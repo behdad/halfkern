@@ -1,3 +1,4 @@
+from fontTools.ttLib import TTFont
 import ngrams
 import kern_pair as kern
 import cairoft
@@ -32,6 +33,11 @@ if __name__ == "__main__":
         help="Text encoding. Default: utf-8",
     )
     parser.add_argument(
+        "--fea",
+        action="store_true",
+        help="Output in FEA format. Default: False",
+    )
+    parser.add_argument(
         "-l",
         "--letters-only",
         action="store_true",
@@ -60,8 +66,11 @@ if __name__ == "__main__":
     if cutoff > 1:
         cutoff = cutoff / 100.0
 
+    ttfont = TTFont(fontfile)
+    cmap = ttfont["cmap"].getBestCmap()
     kern.FONT_FACE = cairoft.create_cairo_font_face_for_file(fontfile, 0)
     kern.HB_FONT = kern.create_hb_font(fontfile)
+    upem = kern.HB_FONT.face.upem
 
     min_s, max_s = kern.find_s()
 
@@ -112,4 +121,13 @@ if __name__ == "__main__":
         if abs(shift) < kern.FONT_SIZE * tolerance:
             continue
 
-        print(trigram, shift)
+        units = round(shift / kern.FONT_SIZE * upem)
+
+        if options.fea:
+            trigram = tuple(cmap.get(ord(c)) for c in trigram)
+            print(
+                "    position %s' %s' <%d 0 0 0> %s;"
+                % (trigram[0], trigram[2], units, trigram[2])
+            )
+        else:
+            print(trigram, units)
