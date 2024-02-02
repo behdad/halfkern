@@ -12,6 +12,7 @@ from collections import defaultdict
 
 NUMBER_LIKE = re.compile(r"([-\.\d]\d)|(\d\.)")
 
+
 def gaussian(x, a, b, c):
     return a * math.exp(-((x - b) ** 2) / (2 * c**2))
 
@@ -31,6 +32,7 @@ HB_FONT = None
 
 FONT_SIZE = 100
 PDF_FONT_SIZE = 18
+LABEL_FONT_SIZE = 8
 
 KERNEL_WIDTH = round(0.2 * FONT_SIZE)
 if KERNEL_WIDTH % 2 == 0:
@@ -108,8 +110,6 @@ def create_pdf_surface_context(filename):
     if FONT_FACE is not None:
         ctx.set_font_face(FONT_FACE)
     ctx.set_font_size(FONT_SIZE)
-    scale = PDF_FONT_SIZE / FONT_SIZE
-    ctx.scale(scale, scale)
     return ctx
 
 
@@ -212,7 +212,7 @@ def kern_pair(
     reduce=max,
     envelope="sdf",
     blurred=False,
-    half=True
+    half=True,
 ):
     old_l_surface = l.surface
     old_r_surface = r.surface
@@ -284,19 +284,34 @@ CONTEXTS = ("non", "HOH")
 
 
 def showcase_in_context(ctx, l, r, kern1, kern2):
+    ctx.save()
+
+    scale = PDF_FONT_SIZE / FONT_SIZE
+    ctx.scale(scale, scale)
+
     font_extents = ctx.font_extents()
     ascent = round(font_extents[0])
     descent = round(font_extents[1])
     height = ascent + descent
 
     ctx.save()
+    ctx.set_font_size(LABEL_FONT_SIZE)
+    ctx.select_font_face("@cairo:", cr.FONT_SLANT_NORMAL, cr.FONT_WEIGHT_NORMAL)
+    label_extents = ctx.font_extents()
+    label_height = round(label_extents[0] + label_extents[1])
+    ctx.restore()
+
     for op in ("MEASURE", "CUT"):
         width = 0
         lines = 0
         for context in CONTEXTS:
             textl = context + l
             textr = r + context
-            for kern in (0, kern1, kern2):
+            for kern, label in (
+                (0, "No kerning"),
+                (kern1, "Suggested kerning"),
+                (kern2, "Original font kerning"),
+            ):
                 if op == "MEASURE":
                     # Measure
                     lines += 1
@@ -309,6 +324,17 @@ def showcase_in_context(ctx, l, r, kern1, kern2):
                     width = max(width, this_width)
                 else:
                     # Render
+                    ctx.save()
+                    ctx.translate(0, BIAS * 0.5)
+                    ctx.set_font_size(LABEL_FONT_SIZE / scale)
+                    ctx.select_font_face(
+                        "@cairo:", cr.FONT_SLANT_NORMAL, cr.FONT_WEIGHT_NORMAL
+                    )
+                    ctx.move_to(BIAS, BIAS + round(label_extents[0]))
+                    ctx.show_text(label)
+                    ctx.restore()
+                    ctx.translate(0, label_height)
+
                     ctx.move_to(BIAS, BIAS + ascent)
                     ctx.show_text(textl)
                     x, y = ctx.get_current_point()
@@ -320,7 +346,7 @@ def showcase_in_context(ctx, l, r, kern1, kern2):
             scale = PDF_FONT_SIZE / FONT_SIZE
             ctx.get_target().set_size(
                 (round(width) + 2 * BIAS) * scale,
-                ((height + BIAS) * lines + BIAS) * scale,
+                ((height + BIAS + label_height) * lines + BIAS) * scale,
             )
         else:
             ctx.show_page()
@@ -335,7 +361,9 @@ def create_hb_font(fontfile, variations=None):
     font = hb.Font(face)
     if variations is not None:
         # Convert from tag=value space-separated list to dict
-        variations = dict((v.split("=")[0], float(v.split("=")[1])) for v in variations.split(','))
+        variations = dict(
+            (v.split("=")[0], float(v.split("=")[1])) for v in variations.split(",")
+        )
         font.set_variations(variations)
     return font
 
@@ -393,12 +421,14 @@ def find_s(*, reduce=max, envelope="sdf"):
 
     return min_s, max_s
 
+
 def escape_bigram(bigram: str) -> str:
     assert len(bigram) == 2
     # Google Sheets / Excel escape formula or number literal
     if bigram.startswith("=") or NUMBER_LIKE.fullmatch(bigram):
         return f"'{bigram}"
     return bigram
+
 
 if __name__ == "__main__":
     import sys
