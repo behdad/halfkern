@@ -283,7 +283,7 @@ def showcase_pair(l, r, kern1, kern2):
 CONTEXTS = ("non", "HOH")
 
 
-def showcase_in_context(ctx, l, r, kern1, kern2):
+def showcase_in_context(ctx, l, r, kern1, kern2, upem):
     ctx.save()
 
     scale = PDF_FONT_SIZE / FONT_SIZE
@@ -309,8 +309,8 @@ def showcase_in_context(ctx, l, r, kern1, kern2):
             textr = r + context
             for kern, label in (
                 (0, "No kerning"),
-                (kern1, "Suggested kerning"),
-                (kern2, "Original font kerning"),
+                (kern1, "Suggested kerning: %d" % round(kern1 / FONT_SIZE * upem)),
+                (kern2, "Original font kerning %d" % round(kern2 / FONT_SIZE * upem)),
             ):
                 if op == "MEASURE":
                     # Measure
@@ -581,7 +581,7 @@ if __name__ == "__main__":
         print("Saving kern.png")
         s = showcase_pair(l, r, kern, font_kern)
         s.write_to_png("kern.png")
-        s = showcase_in_context(pdf_ctx, text[0], text[1], kern, font_kern)
+        s = showcase_in_context(pdf_ctx, text[0], text[1], kern, font_kern, upem)
         s.write_to_png("kerned.png")
 
     # Process dictionaries
@@ -607,7 +607,8 @@ if __name__ == "__main__":
             all_bigrams[k] += v
 
     writer = csv.writer(sys.stdout)
-    writer.writerow(("bigram", "suggested", "actual"))
+    if all_bigrams:
+        writer.writerow(("bigram", "suggested", "actual"))
     for bigram in all_bigrams:
         if (
             unicodedata.category(bigram[0]) == "Mn"
@@ -634,7 +635,7 @@ if __name__ == "__main__":
         if abs(kern_value - font_kern) <= FONT_SIZE * tolerance:
             continue
 
-        showcase_in_context(pdf_ctx, *bigram, kern_value, font_kern)
+        showcase_in_context(pdf_ctx, *bigram, kern_value, font_kern, upem=upem)
 
         if options.upem:
             kern_value = round(kern_value / FONT_SIZE * upem)
