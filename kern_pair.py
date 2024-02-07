@@ -308,9 +308,9 @@ def showcase_in_context(ctx, l, r, kern1, kern2, upem):
             textl = context + l
             textr = r + context
             for kern, label in (
-                (0, "No kerning"),
-                (kern1, "Suggested kerning: %d" % round(kern1 / FONT_SIZE * upem)),
                 (kern2, "Original font kerning %d" % round(kern2 / FONT_SIZE * upem)),
+                (kern1, "Suggested kerning: %d" % round(kern1 / FONT_SIZE * upem)),
+                (0, "No kerning"),
             ):
                 if op == "MEASURE":
                     # Measure
