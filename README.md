@@ -30,8 +30,7 @@ TA -8 -4
 DT -5 -1
 ```
 
-The first value is the pair of letter to kern. The second value is, in percent
-of EM, the suggested kerning value, and the last value is the kerning currently
+The first value is the pair of letter to kern. The second value is, in EM units, the suggested kerning value, and the last value is the kerning currently
 in the font.  Only pairs where the two kerning values differ by a tolerance
 amount are showed.  This tolerance can be set using `-t` or `--tolerance`.
 The default tolerance is 3.3%.
