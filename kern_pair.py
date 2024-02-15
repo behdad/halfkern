@@ -32,7 +32,6 @@ HB_FONT = None
 
 FONT_SIZE = 100
 PDF_FONT_SIZE = 18
-LABEL_FONT_SIZE = 8
 
 KERNEL_WIDTH = round(0.2 * FONT_SIZE)
 if KERNEL_WIDTH % 2 == 0:
@@ -295,7 +294,7 @@ def showcase_in_context(ctx, l, r, kern1, kern2, upem):
     height = ascent + descent
 
     ctx.save()
-    ctx.set_font_size(LABEL_FONT_SIZE)
+    ctx.set_font_size(PDF_FONT_SIZE / 2)
     ctx.select_font_face("@cairo:", cr.FONT_SLANT_NORMAL, cr.FONT_WEIGHT_NORMAL)
     label_extents = ctx.font_extents()
     label_height = round(label_extents[0] + label_extents[1])
@@ -326,7 +325,7 @@ def showcase_in_context(ctx, l, r, kern1, kern2, upem):
                     # Render
                     ctx.save()
                     ctx.translate(0, BIAS * 0.5)
-                    ctx.set_font_size(LABEL_FONT_SIZE / scale)
+                    ctx.set_font_size(PDF_FONT_SIZE / 2 / scale)
                     ctx.select_font_face(
                         "@cairo:", cr.FONT_SLANT_NORMAL, cr.FONT_WEIGHT_NORMAL
                     )
