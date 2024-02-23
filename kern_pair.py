@@ -1,3 +1,4 @@
+from fontTools.ttLib import TTFont
 import ngrams
 import cairo as cr
 import cairoft
@@ -539,6 +540,8 @@ if __name__ == "__main__":
 
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     HB_FONT = create_hb_font(font, options.variations)
+    ttfont = TTFont(font)
+    cmap = ttfont["cmap"].getBestCmap()
 
     if len(texts) == 1 and len(texts[0]) == 1:
         _, _ = find_s(reduce=reduce, envelope=envelope)
@@ -616,6 +619,9 @@ if __name__ == "__main__":
             continue
 
         if options.exclude and any(c in bigram for c in options.exclude):
+            continue
+
+        if any(c not in cmap for c in bigram):
             continue
 
         l = create_blurred_surface_for_text_cached(bigram[0], envelope=envelope)
