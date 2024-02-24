@@ -1,4 +1,3 @@
-from fontTools.ttLib import TTFont
 import ngrams
 import cairo as cr
 import cairoft
@@ -540,8 +539,7 @@ if __name__ == "__main__":
 
     FONT_FACE = cairoft.create_cairo_font_face_for_file(font, 0)
     HB_FONT = create_hb_font(font, options.variations)
-    ttfont = TTFont(font)
-    cmap = ttfont["cmap"].getBestCmap()
+    cmap = HB_FONT.face.unicodes
 
     if len(texts) == 1 and len(texts[0]) == 1:
         _, _ = find_s(reduce=reduce, envelope=envelope)
