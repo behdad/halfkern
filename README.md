@@ -86,7 +86,7 @@ or the
 *TODO:* Expand on how to use these.
 
 For simple English wordlist on Linux and Mac platforms you can use
-`/usr/share/words/dict`.
+`/usr/share/dict/words`.
 
 
 ## Debugging
