@@ -619,7 +619,7 @@ if __name__ == "__main__":
         if options.exclude and any(c in bigram for c in options.exclude):
             continue
 
-        if any(c not in cmap for c in bigram):
+        if any(ord(c) not in cmap for c in bigram):
             continue
 
         l = create_blurred_surface_for_text_cached(bigram[0], envelope=envelope)
